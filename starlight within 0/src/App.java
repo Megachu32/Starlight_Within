@@ -12,14 +12,14 @@ public class App {
 
 
         // game panel a Jframe sub to make a windows jdk pannel
-        GamePanel gamePanel = new GamePanel(window);
-        window.add(gamePanel);
-        window.pack();
+        GamePanel gamePanel = new GamePanel(window); // this is basicly calling the gamepanel class
+        window.add(gamePanel); // adding the gamepanel code to display in the jdk windows
+        window.pack(); // making so that the windows is the same size as the gamepanel
 
         window.setLocationRelativeTo(null);// for so the jdk windows appear in the middle
         window.setVisible(true);// to actualy display the windows
 
-        gamePanel.startGameThread();
+        gamePanel.startGameThread(); // calling thr gamepannel thread to start the game
 
 
 

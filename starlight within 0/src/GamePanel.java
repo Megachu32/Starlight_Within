@@ -4,49 +4,62 @@ import java.awt.Graphics;// for graphics
 import java.awt.Graphics2D;// for graphics 2d
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
-import javax.swing.JFrame;// import Jpanel
+import java.awt.Image;// import Jpanel
+import java.io.IOException;
+import javax.imageio.ImageIO;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
+
 
 public class GamePanel extends JPanel implements Runnable{
     //for screen settings
     // the runnable is for thread
     // final = cant be changed anymore
 
-    final int OriginalTaleSize = 32; // for the tile of the windows 16 times 16
+    final int OriginalTaleSize = 32; // for the tile of the windows not used for now
     final int scale = 3;// for scaling the ugly ahh character
 
 
-    final int tileSize = OriginalTaleSize * scale; // 32 * 3 
+    final int tileSize = OriginalTaleSize * scale; // for the size of the tile not used for now
 
-    final int maxScreenCol = 16;
-    final int maxScreenRow = 12;
+    final int maxScreenCol = 16; // the max column of the screen not used for now beacuse we are using the screen size
+    final int maxScreenRow = 12; //same as above
 
     // setting the fps 
 
-    int fps = 60;
+    int fps = 60; // frame per second
 
-    KeyHandler keyH =  new KeyHandler();
+    KeyHandler keyH =  new KeyHandler(); // initializing the keyhandler
 
-    Thread gameThread;
+    Thread gameThread; // initailizing the thread important to import java.lang.Thread
 
     // player default position
-    int playerX = 100;
-    int playerY = 100;  
-    int playerSpeed = 4;
+    int playerX = 100; // the x position of the player
+    int playerY = 100;  //the y position of the player
+    int playerSpeed = 4; // the speed of the player
+
+    private Image playerImage; // for player image initialization impottant to import java.awt.Image
+
 
     public GamePanel (JFrame window){
 
-        GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-        final int screenWidth = gd.getDisplayMode().getWidth();
-        final int screenHeight = gd.getDisplayMode().getHeight();
+        GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice(); //code for getting the screen size
+        final int screenWidth = gd.getDisplayMode().getWidth(); // getting the screen width
+        final int screenHeight = gd.getDisplayMode().getHeight(); // getting the screen height
 
+        this.setPreferredSize(new Dimension (screenWidth, screenHeight)); // setting the gamepanel size
+        this.setBackground(Color.BLACK); // setting the background color
+        this.setDoubleBuffered(true); // for smooth rendering
+        this.addKeyListener(keyH); // adding the keyhandler witch is the keylistener
+        this.setFocusable(true); // for the keyholder to work and focus on the gamepanel
 
-
-        this.setPreferredSize(new Dimension (screenWidth, screenHeight));
-        this.setBackground(Color.BLACK);
-        this.setDoubleBuffered(true);
-        this.addKeyListener(keyH);
-        this.setFocusable(true);
+        // for loanding the player image
+        try {
+            playerImage = ImageIO.read(getClass().getResource("/resource/spade_monster.png"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
     }
 
     // thread code that allow the game to run with loop and clock
@@ -63,21 +76,19 @@ public class GamePanel extends JPanel implements Runnable{
     @Override
     public void run() {
 
-        double renderInteval  = 1000000000.0/fps;
-        double delta = 0;
-        long lastRenderTIme = System.nanoTime();
-        long currentTime;
-    
+        double renderInteval  = 1000000000.0/fps; // nano second defided by 60 so it get the intercval of 1 frame
+        double delta = 0; // delta is the time berween frame 
+        long lastRenderTIme = System.nanoTime(); // get the current time in nano second
+        long currentTime; // curent time in nano second
+
+        // thread game loop 
         while (gameThread != null){
 
+            currentTime = System.nanoTime();// get the curent time in nano second again
 
+            delta += (currentTime - lastRenderTIme) / renderInteval; // calculate the delta time
 
-
-            currentTime = System.nanoTime();
-
-            delta += (currentTime - lastRenderTIme) / renderInteval;
-
-            lastRenderTIme = currentTime;
+            lastRenderTIme = currentTime; // set the last render time to the current time
 
             if (delta >= 1){
                 // 1. UPADATE THE CHARACTER POSITION
@@ -113,9 +124,13 @@ public class GamePanel extends JPanel implements Runnable{
 
         Graphics2D g2 = (Graphics2D)g;// converting graphic to 2d so you can draw on thw jdk
 
-        g2.setColor(Color.WHITE);// setting the box color
-
-        g2.fillRect(playerX, playerY, 32, 32);// fillimg the rectangle
+        if (playerImage != null) {
+            g2.drawImage(playerImage, playerX, playerY, tileSize, tileSize, null); // draw player character image
+        } else {
+            g2.setColor(Color.WHITE);
+            g2.fillRect(playerX, playerY, tileSize, tileSize); // Draw square if image not found
+        }
+    
 
         g2.dispose();// erasing it again for 1 frame
 
