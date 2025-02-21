@@ -9,13 +9,17 @@ public class App {
         window.setResizable(false);// for so that the windows cant be resized
         window.setTitle("starlight within 0");// this is for the windows / the game name
 
+
+
         // game panel a Jframe sub to make a windows jdk pannel
-        GamePanel gamePanel = new GamePanel();
+        GamePanel gamePanel = new GamePanel(window);
         window.add(gamePanel);
         window.pack();
 
         window.setLocationRelativeTo(null);// for so the jdk windows appear in the middle
         window.setVisible(true);// to actualy display the windows
+
+        gamePanel.startGameThread();
 
 
 
