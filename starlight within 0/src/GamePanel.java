@@ -36,7 +36,7 @@ public class GamePanel extends JPanel implements Runnable{
     // player default position
     int playerX = 100; // the x position of the player
     int playerY = 100;  //the y position of the player
-    int playerSpeed = 4; // the speed of the player
+    int playerSpeed = 7; // the speed of the player
 
     private Image playerImage; // for player image initialization impottant to import java.awt.Image
 
@@ -55,7 +55,7 @@ public class GamePanel extends JPanel implements Runnable{
 
         // for loanding the player image
         try {
-            playerImage = ImageIO.read(getClass().getResource("/resource/spade_monster.png"));
+            playerImage = ImageIO.read(getClass().getResource("spade_monster.png"));
         } catch (IOException e) {
             e.printStackTrace();
         }
