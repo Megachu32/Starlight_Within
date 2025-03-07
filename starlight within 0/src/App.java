@@ -21,9 +21,5 @@ public class App {
 
         gamePanel.startGameThread(); // calling thr gamepannel thread to start the game
 
-        //hello world
-        System.out.println("imma start the game fr fr");
-
-
     }
 }
