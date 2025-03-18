@@ -13,14 +13,17 @@ public class GamePanel extends JPanel implements Runnable {
     int fps = 60; 
 
     public BufferedImage playerImage;
+    public BufferedImage playerImageMove;
     BufferedImage[] frames;
+    BufferedImage[] framesRun;
     int currentFrame = 0;
     int frameWidth;
     int frameHeight;
     int animationCounter = 0;
-    int animationSpeed = 5;
+    int animationSpeed = 100;
     int spriteTotalFrame = 10; 
     String direction = "right";
+    static boolean isMoving;
 
     KeyHandler keyH = new KeyHandler();
     Thread gameThread;
@@ -43,10 +46,15 @@ public class GamePanel extends JPanel implements Runnable {
 
         // ✅ Load player image first before calculating frame size
         playerImage = ImageIO.read(getClass().getResourceAsStream("/resource/_Idle.png"));
-        
+        playerImageMove = ImageIO.read(getClass().getResource("/resource/Colour1/NoOutline/120x80_PNGSheets/_Run.png"));
+
+        //Check if the image is loaded
         if (playerImage == null) {
-            System.out.println("Error: Image not found!");
+            System.out.println("Error _Idle.png not found");
             return;
+        }
+        if(playerImageMove == null){
+            System.out.println("Error _Run.png not found");
         }
 
         // ✅ Calculate frame dimensions AFTER loading the image
@@ -58,6 +66,12 @@ public class GamePanel extends JPanel implements Runnable {
         for (int i = 0; i < spriteTotalFrame; i++) {
             frames[i] = playerImage.getSubimage(i * frameWidth, 0, frameWidth, frameHeight);
         }
+
+        framesRun = new BufferedImage[spriteTotalFrame];
+        for(int i = 0; i < spriteTotalFrame; i++){
+            framesRun[i] = playerImageMove.getSubimage(i * frameWidth, 0, frameWidth, frameHeight);
+        }
+        
 
         System.out.println("Loaded " + spriteTotalFrame + " frames. Frame width: " + frameWidth);
     }
@@ -86,31 +100,10 @@ public class GamePanel extends JPanel implements Runnable {
             repaint();
         }
     }
-    @Override
-    public void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        Graphics2D g2 = (Graphics2D) g;
-
-        if (frames != null && frames.length > 0 && frames[currentFrame] != null) {
-            BufferedImage sprite = frames[currentFrame];
-
-            if (direction.equals("left")) {
-                // Flip sprite for left-facing idle animation
-                sprite = flipImageHorizontally(sprite);
-            }
-
-            g2.drawImage(sprite, playerX, playerY, tileSize, tileSize, this);
-        } else {
-            g2.setColor(Color.WHITE);
-            g2.fillRect(playerX, playerY, tileSize, tileSize);
-        }
-
-        g2.dispose();
-    }
-
+    
     public void update() {
-        boolean isMoving = false; // Track if the player is moving
-
+        isMoving = false; // Track if the player is moving
+        
         if (keyH.left) {
             playerX -= playerSpeed;
             direction = "left";
@@ -129,7 +122,48 @@ public class GamePanel extends JPanel implements Runnable {
             playerY += playerSpeed;
             isMoving = true;
         }
+    }
+        @Override
+        public void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            Graphics2D g2 = (Graphics2D) g;
+    
+            //for triger moving run 
+            if(framesRun != null && framesRun.length > 0 && framesRun[currentFrame] != null && isMoving == true){
+                
+                BufferedImage spriteRuns = framesRun[currentFrame];
 
+                if (direction.equals("left")) {
+                    // Flip sprite for left-facing idle animation
+                    spriteRuns = flipImageHorizontally(spriteRuns);
+                }
+
+                g2.drawImage(spriteRuns, playerX, playerY, tileSize, tileSize, this);
+            }
+            // else{
+            //     g2.setColor(Color.WHITE);
+            //     g2.fillRect(playerX, playerY, tileSize, tileSize);
+            // }
+            
+            //for triger staying
+            if (frames != null && frames.length > 0 && frames[currentFrame] != null && isMoving == false) {
+                BufferedImage sprite = frames[currentFrame];
+    
+                if (direction.equals("left")) {
+                    // Flip sprite for left-facing idle animation
+                    sprite = flipImageHorizontally(sprite);
+                }
+    
+                g2.drawImage(sprite, playerX, playerY, tileSize, tileSize, this);
+            } 
+            // else {
+            //     g2.setColor(Color.WHITE);
+            //     g2.fillRect(playerX, playerY, tileSize, tileSize);
+            // }
+    
+            g2.dispose();
+
+        
         // ✅ Keep animating even when idle
         if (++animationCounter >= animationSpeed) {
             animationCounter = 0;
