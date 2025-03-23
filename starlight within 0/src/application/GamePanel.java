@@ -14,8 +14,10 @@ public class GamePanel extends JPanel implements Runnable {
 
     public BufferedImage playerImage;
     public BufferedImage playerImageMove;
+    public BufferedImage playerJump;
     BufferedImage[] frames;
     BufferedImage[] framesRun;
+    BufferedImage[] framesJump;
     int currentFrame = 0;
     int frameWidth;
     int frameHeight;
@@ -24,6 +26,7 @@ public class GamePanel extends JPanel implements Runnable {
     int spriteTotalFrame = 10; 
     String direction = "right";
     static boolean isMoving;
+    static boolean isJump;
 
     KeyHandler keyH = new KeyHandler();
     Thread gameThread;
@@ -47,6 +50,7 @@ public class GamePanel extends JPanel implements Runnable {
         // ✅ Load player image first before calculating frame size
         playerImage = ImageIO.read(getClass().getResourceAsStream("/resource/_Idle.png"));
         playerImageMove = ImageIO.read(getClass().getResource("/resource/Colour1/NoOutline/120x80_PNGSheets/_Run.png"));
+        playerJump = ImageIO.read(getClass().getResource("/resource/Colour1/NoOutline/120x80_PNGSheets/_Roll.png"));
 
         //Check if the image is loaded
         if (playerImage == null) {
@@ -55,6 +59,9 @@ public class GamePanel extends JPanel implements Runnable {
         }
         if(playerImageMove == null){
             System.out.println("Error _Run.png not found");
+        }
+        if(playerJump == null){
+            System.out.println("Error _Roll.png not found");
         }
 
         // ✅ Calculate frame dimensions AFTER loading the image
@@ -70,6 +77,11 @@ public class GamePanel extends JPanel implements Runnable {
         framesRun = new BufferedImage[spriteTotalFrame];
         for(int i = 0; i < spriteTotalFrame; i++){
             framesRun[i] = playerImageMove.getSubimage(i * frameWidth, 0, frameWidth, frameHeight);
+        }
+
+        framesJump = new BufferedImage[12];
+        for(int i = 0; i < 12; i++){
+            framesJump[i] = playerJump.getSubimage(i * frameWidth, 0, frameWidth, frameHeight);
         }
         
 
@@ -103,7 +115,8 @@ public class GamePanel extends JPanel implements Runnable {
     
     public void update() {
         isMoving = false; // Track if the player is moving
-        
+        isJump = false;
+
         if (keyH.left) {
             playerX -= playerSpeed;
             direction = "left";
@@ -122,44 +135,56 @@ public class GamePanel extends JPanel implements Runnable {
             playerY += playerSpeed;
             isMoving = true;
         }
+        if (keyH.space) {
+            if(direction.equals("right")){
+                playerX += playerSpeed ;
+            }
+            if(direction.equals("left")){
+                playerX -= playerSpeed ;
+            }
+            direction = "space";
+            isMoving = true;
+            isJump = true;
+        }
     }
         @Override
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
             Graphics2D g2 = (Graphics2D) g;
-    
-            //for triger moving run 
-            if(framesRun != null && framesRun.length > 0 && framesRun[currentFrame] != null && isMoving == true){
-                
-                BufferedImage spriteRuns = framesRun[currentFrame];
-
-                if (direction.equals("left")) {
-                    // Flip sprite for left-facing idle animation
-                    spriteRuns = flipImageHorizontally(spriteRuns);
-                }
-
-                g2.drawImage(spriteRuns, playerX, playerY, tileSize, tileSize, this);
-            }
-            // else{
-            //     g2.setColor(Color.WHITE);
-            //     g2.fillRect(playerX, playerY, tileSize, tileSize);
-            // }
             
-            //for triger staying
-            if (frames != null && frames.length > 0 && frames[currentFrame] != null && isMoving == false) {
-                BufferedImage sprite = frames[currentFrame];
-    
-                if (direction.equals("left")) {
-                    // Flip sprite for left-facing idle animation
-                    sprite = flipImageHorizontally(sprite);
-                }
-    
-                g2.drawImage(sprite, playerX, playerY, tileSize, tileSize, this);
-            } 
-            // else {
-            //     g2.setColor(Color.WHITE);
-            //     g2.fillRect(playerX, playerY, tileSize, tileSize);
-            // }
+            // Ensure Jump animation has priority
+if (framesJump != null && isJump) {
+    BufferedImage spriteJump = framesJump[currentFrame];
+
+    if (direction.equals("left")) {
+        spriteJump = flipImageHorizontally(spriteJump);
+    }
+
+    g2.drawImage(spriteJump, playerX, playerY, tileSize, tileSize, this);
+}
+// Only draw run if not jumping
+else if (framesRun != null && isMoving) {
+    BufferedImage spriteRun = framesRun[currentFrame];
+
+    if (direction.equals("left")) {
+        spriteRun = flipImageHorizontally(spriteRun);
+    }
+
+    g2.drawImage(spriteRun, playerX, playerY, tileSize, tileSize, this);
+}
+// Draw idle last
+else if (frames != null) {
+    BufferedImage spriteIdle = frames[currentFrame];
+
+    if (direction.equals("left")) {
+        spriteIdle = flipImageHorizontally(spriteIdle);
+    }
+
+    g2.drawImage(spriteIdle, playerX, playerY, tileSize, tileSize, this);
+}
+
+            
+            
     
             g2.dispose();
 
@@ -167,8 +192,12 @@ public class GamePanel extends JPanel implements Runnable {
         // ✅ Keep animating even when idle
         if (++animationCounter >= animationSpeed) {
             animationCounter = 0;
-            if (spriteTotalFrame > 0) {
-                currentFrame = (currentFrame + 1) % spriteTotalFrame;
+            if (isJump) {
+                currentFrame = (currentFrame + 1) % framesJump.length;
+            } else if (isMoving) {
+                currentFrame = (currentFrame + 1) % framesRun.length;
+            } else {
+                currentFrame = (currentFrame + 1) % frames.length;
             }
         }
     }
@@ -177,8 +206,11 @@ public class GamePanel extends JPanel implements Runnable {
         int height = image.getHeight();
         BufferedImage flipped = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = flipped.createGraphics();
-        g.drawImage(image, 0, 0, width, height, width, 0, 0, height, null);
+        
+        // Corrected transformation
+        g.drawImage(image, width, 0, -width, height, null);  
         g.dispose();
+        
         return flipped;
     }
 }
