@@ -1,4 +1,5 @@
 package application;
+
 import entity.Player;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -7,26 +8,26 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 
 public class GamePanel extends JPanel implements Runnable {
-    final int OriginalTaleSize = 32; // tile size
-    final int scale = 10; // scale
-    final int tileSize = OriginalTaleSize * scale;
-    int fps = 60; 
 
-    public BufferedImage playerImage;
-    public BufferedImage playerImageMove;
-    public BufferedImage playerJump;
-    BufferedImage[] frames;
+    final int OriginalTileSize = 32;
+    final int scale = 10;
+    final int tileSize = OriginalTileSize * scale;
+
+    final int fps = 60;
+
+    BufferedImage[] framesIdle;
     BufferedImage[] framesRun;
-    BufferedImage[] framesJump;
+    BufferedImage[] framesRoll;
     int currentFrame = 0;
+    int animationCounter = 0;
+    final int animationSpeed = 100; // Lower number = faster animation (smaller is faster)
+
     int frameWidth;
     int frameHeight;
-    int animationCounter = 0;
-    int animationSpeed = 100;
-    int spriteTotalFrame = 10; 
+
     String direction = "right";
-    static boolean isMoving;
-    static boolean isJump;
+    boolean isMoving = false;
+    boolean isRolling = false;
 
     KeyHandler keyH = new KeyHandler();
     Thread gameThread;
@@ -34,7 +35,7 @@ public class GamePanel extends JPanel implements Runnable {
 
     int playerX = 100;
     int playerY = 100;
-    int playerSpeed = 7; 
+    final int playerSpeed = 7;
 
     public GamePanel(JFrame window) throws IOException {
         GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
@@ -47,45 +48,38 @@ public class GamePanel extends JPanel implements Runnable {
         this.addKeyListener(keyH);
         this.setFocusable(true);
 
-        // ✅ Load player image first before calculating frame size
-        playerImage = ImageIO.read(getClass().getResourceAsStream("/resource/_Idle.png"));
-        playerImageMove = ImageIO.read(getClass().getResource("/resource/Colour1/NoOutline/120x80_PNGSheets/_Run.png"));
-        playerJump = ImageIO.read(getClass().getResource("/resource/Colour1/NoOutline/120x80_PNGSheets/_Roll.png"));
+        loadSprites();
+    }
 
-        //Check if the image is loaded
-        if (playerImage == null) {
-            System.out.println("Error _Idle.png not found");
+    private void loadSprites() throws IOException {
+        BufferedImage idleSheet = ImageIO.read(getClass().getResourceAsStream("/resource/_Idle.png"));
+        BufferedImage runSheet = ImageIO.read(getClass().getResource("/resource/Colour1/NoOutline/120x80_PNGSheets/_Run.png"));
+        BufferedImage rollSheet = ImageIO.read(getClass().getResource("/resource/Colour1/NoOutline/120x80_PNGSheets/_Roll.png"));
+
+        if (idleSheet == null || runSheet == null || rollSheet == null) {
+            System.out.println("Error loading images");
             return;
         }
-        if(playerImageMove == null){
-            System.out.println("Error _Run.png not found");
-        }
-        if(playerJump == null){
-            System.out.println("Error _Roll.png not found");
-        }
 
-        // ✅ Calculate frame dimensions AFTER loading the image
-        frameWidth = playerImage.getWidth() / spriteTotalFrame;
-        frameHeight = playerImage.getHeight();
+        frameWidth = idleSheet.getWidth() / 10;
+        frameHeight = idleSheet.getHeight();
 
-        // ✅ Load sprite frames
-        frames = new BufferedImage[spriteTotalFrame];
-        for (int i = 0; i < spriteTotalFrame; i++) {
-            frames[i] = playerImage.getSubimage(i * frameWidth, 0, frameWidth, frameHeight);
+        framesIdle = new BufferedImage[10];
+        for (int i = 0; i < 10; i++) {
+            framesIdle[i] = idleSheet.getSubimage(i * frameWidth, 0, frameWidth, frameHeight);
         }
 
-        framesRun = new BufferedImage[spriteTotalFrame];
-        for(int i = 0; i < spriteTotalFrame; i++){
-            framesRun[i] = playerImageMove.getSubimage(i * frameWidth, 0, frameWidth, frameHeight);
+        framesRun = new BufferedImage[10];
+        for (int i = 0; i < 10; i++) {
+            framesRun[i] = runSheet.getSubimage(i * frameWidth, 0, frameWidth, frameHeight);
         }
 
-        framesJump = new BufferedImage[12];
-        for(int i = 0; i < 12; i++){
-            framesJump[i] = playerJump.getSubimage(i * frameWidth, 0, frameWidth, frameHeight);
+        framesRoll = new BufferedImage[12];
+        for (int i = 0; i < 12; i++) {
+            framesRoll[i] = rollSheet.getSubimage(i * frameWidth, 0, frameWidth, frameHeight);
         }
-        
 
-        System.out.println("Loaded " + spriteTotalFrame + " frames. Frame width: " + frameWidth);
+        System.out.println("Loaded sprites successfully. Frame size: " + frameWidth + "x" + frameHeight);
     }
 
     public void startGameThread() {
@@ -108,14 +102,14 @@ public class GamePanel extends JPanel implements Runnable {
                 update();
                 delta--;
             }
-            
+
             repaint();
         }
     }
-    
+
     public void update() {
-        isMoving = false; // Track if the player is moving
-        isJump = false;
+        isMoving = false;
+        isRolling = false;
 
         if (keyH.left) {
             playerX -= playerSpeed;
@@ -136,81 +130,56 @@ public class GamePanel extends JPanel implements Runnable {
             isMoving = true;
         }
         if (keyH.space) {
-            if(direction.equals("right")){
-                playerX += playerSpeed ;
+            if (direction.equals("right")) {
+                playerX += playerSpeed;
+            } else if (direction.equals("left")) {
+                playerX -= playerSpeed;
             }
-            if(direction.equals("left")){
-                playerX -= playerSpeed ;
-            }
-            direction = "space";
-            isMoving = true;
-            isJump = true;
+            isRolling = true;
         }
     }
-        @Override
-        public void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            Graphics2D g2 = (Graphics2D) g;
-            
-            // Ensure Jump animation has priority
-if (framesJump != null && isJump) {
-    BufferedImage spriteJump = framesJump[currentFrame];
 
-    if (direction.equals("left")) {
-        spriteJump = flipImageHorizontally(spriteJump);
+    @Override
+    public void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        Graphics2D g2 = (Graphics2D) g;
+
+        BufferedImage spriteToDraw = null;
+
+        if (isRolling) {
+            spriteToDraw = framesRoll[currentFrame % framesRoll.length];
+        } else if (isMoving) {
+            spriteToDraw = framesRun[currentFrame % framesRun.length];
+        } else {
+            spriteToDraw = framesIdle[currentFrame % framesIdle.length];
+        }
+
+        if (direction.equals("left")) {
+            spriteToDraw = flipImageHorizontally(spriteToDraw);
+        }
+
+        g2.drawImage(spriteToDraw, playerX, playerY, tileSize, tileSize, this);
+
+        g2.dispose();
+
+        updateAnimation();
     }
 
-    g2.drawImage(spriteJump, playerX, playerY, tileSize, tileSize, this);
-}
-// Only draw run if not jumping
-else if (framesRun != null && isMoving) {
-    BufferedImage spriteRun = framesRun[currentFrame];
-
-    if (direction.equals("left")) {
-        spriteRun = flipImageHorizontally(spriteRun);
-    }
-
-    g2.drawImage(spriteRun, playerX, playerY, tileSize, tileSize, this);
-}
-// Draw idle last
-else if (frames != null) {
-    BufferedImage spriteIdle = frames[currentFrame];
-
-    if (direction.equals("left")) {
-        spriteIdle = flipImageHorizontally(spriteIdle);
-    }
-
-    g2.drawImage(spriteIdle, playerX, playerY, tileSize, tileSize, this);
-}
-
-            
-            
-    
-            g2.dispose();
-
-        
-        // ✅ Keep animating even when idle
-        if (++animationCounter >= animationSpeed) {
+    private void updateAnimation() {
+        animationCounter++;
+        if (animationCounter >= animationSpeed) {
             animationCounter = 0;
-            if (isJump) {
-                currentFrame = (currentFrame + 1) % framesJump.length;
-            } else if (isMoving) {
-                currentFrame = (currentFrame + 1) % framesRun.length;
-            } else {
-                currentFrame = (currentFrame + 1) % frames.length;
-            }
+            currentFrame++;
         }
     }
+
     private BufferedImage flipImageHorizontally(BufferedImage image) {
         int width = image.getWidth();
         int height = image.getHeight();
         BufferedImage flipped = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = flipped.createGraphics();
-        
-        // Corrected transformation
-        g.drawImage(image, width, 0, -width, height, null);  
+        g.drawImage(image, width, 0, -width, height, null);
         g.dispose();
-        
         return flipped;
     }
 }
