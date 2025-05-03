@@ -1,11 +1,17 @@
 package application;
 
 import entity.Player;
+import map.Loby;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import entity.*;
 
 public class GamePanel extends JPanel implements Runnable {
 
@@ -37,13 +43,24 @@ public class GamePanel extends JPanel implements Runnable {
     int playerY = 100;
     final int playerSpeed = 7;
 
+    int screenWidthTemp;
+    int screenHeightTemp;
+
+    Instant timeNow = Instant.now();
+    Instant lastRollTime = Instant.now(); // when you last rolled
+
+    Loby loby;
+
     public GamePanel(JFrame window) throws IOException {
         GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
         final int screenWidth = gd.getDisplayMode().getWidth();
         final int screenHeight = gd.getDisplayMode().getHeight();
+        screenWidthTemp = screenWidth;
+        screenHeightTemp = screenHeight;
+
+        loby = new Loby();
 
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
-        this.setBackground(Color.BLACK);
         this.setDoubleBuffered(true);
         this.addKeyListener(keyH);
         this.setFocusable(true);
@@ -110,7 +127,9 @@ public class GamePanel extends JPanel implements Runnable {
     public void update() {
         isMoving = false;
         isRolling = false;
-
+    
+        Duration timeSinceLastRoll = Duration.between(lastRollTime, Instant.now());
+    
         if (keyH.left) {
             playerX -= playerSpeed;
             direction = "left";
@@ -129,20 +148,26 @@ public class GamePanel extends JPanel implements Runnable {
             playerY += playerSpeed;
             isMoving = true;
         }
+    
         if (keyH.space) {
+            lastRollTime = Instant.now(); // reset timer
+            isRolling = true;
+
             if (direction.equals("right")) {
                 playerX += playerSpeed;
             } else if (direction.equals("left")) {
                 playerX -= playerSpeed;
             }
-            isRolling = true;
         }
     }
-
+    
+    
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
+
+        loby.draw(g2, -playerX, -playerY, screenWidthTemp, screenHeightTemp);
 
         BufferedImage spriteToDraw = null;
 
@@ -158,7 +183,9 @@ public class GamePanel extends JPanel implements Runnable {
             spriteToDraw = flipImageHorizontally(spriteToDraw);
         }
 
-        g2.drawImage(spriteToDraw, playerX, playerY, tileSize, tileSize, this);
+        g2.drawImage(spriteToDraw, (screenWidthTemp - tileSize) / 2, (screenHeightTemp - (tileSize * 2)) / 2, tileSize, tileSize, this);
+        
+        drawHealthAndManaBars(g2);
 
         g2.dispose();
 
@@ -182,4 +209,41 @@ public class GamePanel extends JPanel implements Runnable {
         g.dispose();
         return flipped;
     }
+
+    private void drawHealthAndManaBars(Graphics2D g2) {
+        int healthMax = player.getMaxHp();
+        int healthCurrent = player.getHp();
+    
+        int manaMax = player.getManaMax();
+        int manaCurrent = player.getMana();
+    
+        // Bar sizes
+        int barWidth = 250;
+        int barHeight = 30;
+        int x = 20;
+        int y = 30;
+    
+        // Health Bar
+        g2.setColor(Color.DARK_GRAY); // Background
+        g2.fillRect(x, y, barWidth, barHeight);
+        g2.setColor(Color.RED); // Health lost
+        g2.fillRect(x, y, barWidth, barHeight);
+        g2.setColor(Color.GREEN); // Current health
+        int healthWidth = (int)((double)healthCurrent / healthMax * barWidth);
+        g2.fillRect(x, y, healthWidth, barHeight);
+    
+        // Mana Bar (below health bar)
+        int manaY = y + barHeight + 10;
+        g2.setColor(Color.DARK_GRAY);
+        g2.fillRect(x, manaY, barWidth, barHeight);
+        g2.setColor(Color.BLUE);
+        int manaWidth = (int)((double)manaCurrent / manaMax * barWidth);
+        g2.fillRect(x, manaY, manaWidth, barHeight);
+    
+        // Optional: Draw borders
+        g2.setColor(Color.WHITE);
+        g2.drawRect(x, y, barWidth, barHeight);
+        g2.drawRect(x, manaY, barWidth, barHeight);
+    }
+    
 }
