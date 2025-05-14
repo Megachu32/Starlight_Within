@@ -46,6 +46,11 @@ public class GamePanel extends JPanel implements Runnable {
     int screenWidthTemp;
     int screenHeightTemp;
 
+    boolean rolling = false;
+    int rollingCounter = 0;
+    final int rollDuration = 12; // How many frames the roll lasts (same as roll animation frames)
+    BufferedImage currentImage;
+
     Instant timeNow = Instant.now();
     Instant lastRollTime = Instant.now(); // when you last rolled
 
