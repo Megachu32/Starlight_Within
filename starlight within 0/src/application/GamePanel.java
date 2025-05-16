@@ -129,6 +129,7 @@ public class GamePanel extends JPanel implements Runnable {
         }
     }
 
+    //used for the player to move
     public void update() {
         isMoving = false;
         isRolling = false;
@@ -199,7 +200,13 @@ public class GamePanel extends JPanel implements Runnable {
 
     private void updateAnimation() {
         animationCounter++;
-        if (animationCounter >= animationSpeed) {
+        //for the left rolling speed
+        if (animationCounter >= animationSpeed && direction.equals("left")) {
+            animationCounter = 0;
+            currentFrame++;
+        }
+        //for the right rolling speed cuz it's too fast
+        else if(animationCounter >= animationSpeed * 2 && direction.equals("right")){
             animationCounter = 0;
             currentFrame++;
         }
