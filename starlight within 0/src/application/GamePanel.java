@@ -1,17 +1,14 @@
 package application;
 
 import entity.Player;
-import map.Loby;
-
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
-
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import entity.*;
+import map.Loby;
 
 public class GamePanel extends JPanel implements Runnable {
 
@@ -55,6 +52,19 @@ public class GamePanel extends JPanel implements Runnable {
     Instant lastRollTime = Instant.now(); // when you last rolled
 
     Loby loby;
+
+    public boolean canRoll() {
+        //TODO connect to roll method
+        Instant now = Instant.now();
+        Duration timeElapsed = Duration.between(lastRollTime, now);
+
+        if (timeElapsed.getSeconds() >= 3) {
+            lastRollTime = now; // update to the new roll time
+            return true;
+            
+        }
+        return false;
+    }
 
     public GamePanel(JFrame window) throws IOException {
         GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
