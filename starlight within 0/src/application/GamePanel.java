@@ -45,11 +45,14 @@ public class GamePanel extends JPanel implements Runnable {
 
     boolean rolling = false;
     int rollingCounter = 0;
-    final int rollDuration = 12; // How many frames the roll lasts (same as roll animation frames)
+    final int rollDuration = 36; // How many frames the roll lasts (same as roll animation frames)
     BufferedImage currentImage;
 
     Instant timeNow = Instant.now();
     Instant lastRollTime = Instant.now(); // when you last rolled
+
+    public boolean toggleCursor = false;
+
 
     Loby loby;
 
@@ -58,11 +61,12 @@ public class GamePanel extends JPanel implements Runnable {
         Instant now = Instant.now();
         Duration timeElapsed = Duration.between(lastRollTime, now);
 
-        if (timeElapsed.getSeconds() >= 3) {
+        if (timeElapsed.getSeconds() >= 1) {
             lastRollTime = now; // update to the new roll time
+            keyH.space = true; // reset the space key
             return true;
-            
         }
+        keyH.space = false; // reset the space key
         return false;
     }
 
@@ -164,16 +168,32 @@ public class GamePanel extends JPanel implements Runnable {
             playerY += playerSpeed;
             isMoving = true;
         }
-    
         if (keyH.space) {
-            lastRollTime = Instant.now(); // reset timer
+            boolean canRoll = canRoll();
+            if (canRoll) {
+                rolling = true;
+                isRolling = true;
+                keyH.space = false; // Consume the key press
+                lastRollTime = Instant.now(); // Start cooldown
+                return;
+            }
+        }
+        if (rolling) {
             isRolling = true;
+            rollingCounter++;
 
             if (direction.equals("right")) {
                 playerX += playerSpeed;
             } else if (direction.equals("left")) {
                 playerX -= playerSpeed;
             }
+
+            if (rollingCounter >= rollDuration) {
+                rolling = false;
+                rollingCounter = 0;
+            }
+
+            return; // Skip rest of update() while rolling
         }
     }
     
@@ -267,5 +287,18 @@ public class GamePanel extends JPanel implements Runnable {
         g2.drawRect(x, y, barWidth, barHeight);
         g2.drawRect(x, manaY, barWidth, barHeight);
     }
+
+    public void hideCursor() {
+    // Create a new blank cursor image
+        BufferedImage blankCursorImg = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
+        Cursor blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(
+        blankCursorImg, new Point(0, 0), "blank cursor");
+        setCursor(blankCursor);
+    }
+
+    public void showCursor() {
+        setCursor(Cursor.getDefaultCursor());
+    }
+
     
 }

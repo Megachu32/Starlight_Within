@@ -45,8 +45,6 @@
                 down = false;
             } else if (code == KeyEvent.VK_D) {
                 right = false;
-            } else if(code == KeyEvent.VK_SPACE){
-                space = false;
             }
         }
 

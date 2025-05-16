@@ -21,19 +21,10 @@ public class Player extends Entity{
     public Player(GamePanel gp, KeyHandler keyH){
         this.gp = gp;
         this.keyH = keyH;
-    }
-
-    public void statusPlayer(int hp, int maxHp, int xp, int level, int damage,int magicalDamage, int physicalArmor, int magicalArmor, int mana, int manaMax) {
-        this.hp = hp;
-        this.maxHp = maxHp;  
-        this.xp = xp;
-        this.level = level;
-        this.pyhsicalDamage = damage;
-        this.magicalDamage = magicalDamage;
-        this.physicalArmor = physicalArmor;
-        this.magicalArmor = magicalArmor;
-        this.mana = mana;
-        this.manaMax = manaMax;
+        this.mana = 50;
+        this.manaMax = 100;
+        this.hp = 50;
+        this.maxHp = 100; 
     }
 
     public GamePanel getGp() {
