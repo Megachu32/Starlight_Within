@@ -23,7 +23,7 @@ public class GamePanel extends JPanel implements Runnable {
     BufferedImage[] framesRoll;
     int currentFrame = 0;
     int animationCounter = 0;
-    final int animationSpeed = 100; // Lower number = faster animation (smaller is faster)
+    final int animationSpeed = 150; // Lower number = faster animation (smaller is faster)
 
     int frameWidth;
     int frameHeight;
