@@ -20,6 +20,7 @@ public class UserInterface {
 
         setupMenu();
 
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         frame.setLocationRelativeTo(null); // Center the frame
         frame.setVisible(true);
     }
