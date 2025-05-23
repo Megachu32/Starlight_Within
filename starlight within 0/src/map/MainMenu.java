@@ -25,10 +25,10 @@ public class MainMenu {
         frame.setLocationRelativeTo(null); // Center the frame
         frame.setVisible(true);
     }
-
+    // what you mean by setup menu?
     private void setupMenu() {
         // Create title label
-        JLabel titleLabel = new JLabel("My Awesome Game", SwingConstants.CENTER);
+        JLabel titleLabel = new JLabel("star light within", SwingConstants.CENTER);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
         frame.add(titleLabel, BorderLayout.NORTH);
 
@@ -75,7 +75,6 @@ public class MainMenu {
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
-    
         gamePanel.requestFocusInWindow(); // <<--- ADD THIS
         gamePanel.startGameThread();
     }
