@@ -21,9 +21,10 @@ public class GamePanel extends JPanel implements Runnable {
     BufferedImage[] framesIdle;
     BufferedImage[] framesRun;
     BufferedImage[] framesRoll;
+    BufferedImage[] framesAttack;
     int currentFrame = 0;
     int animationCounter = 0;
-    final int animationSpeed = 150; // Lower number = faster animation (smaller is faster)
+    final int animationSpeed = 20; // Lower number = faster animation (smaller is faster)
 
     int frameWidth;
     int frameHeight;
@@ -36,12 +37,13 @@ public class GamePanel extends JPanel implements Runnable {
     Thread gameThread;
     Player player = new Player(this, keyH);
 
-    int playerX = 100;
-    int playerY = 100;
+    
     final int playerSpeed = 7;
 
     int screenWidthTemp;
     int screenHeightTemp;
+    int playerX = screenWidthTemp/ 2;
+    int playerY = screenHeightTemp / 2;
 
     boolean rolling = false;
     int rollingCounter = 0;
@@ -53,7 +55,7 @@ public class GamePanel extends JPanel implements Runnable {
 
     public boolean toggleCursor = false;
 
-
+    // calling loby
     Loby loby;
 
     public boolean canRoll() {
@@ -76,9 +78,7 @@ public class GamePanel extends JPanel implements Runnable {
         final int screenHeight = gd.getDisplayMode().getHeight();
         screenWidthTemp = screenWidth;
         screenHeightTemp = screenHeight;
-
         loby = new Loby();
-
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
         this.setDoubleBuffered(true);
         this.addKeyListener(keyH);
@@ -91,8 +91,9 @@ public class GamePanel extends JPanel implements Runnable {
         BufferedImage idleSheet = ImageIO.read(getClass().getResourceAsStream("/resource/_Idle.png"));
         BufferedImage runSheet = ImageIO.read(getClass().getResource("/resource/Colour1/NoOutline/120x80_PNGSheets/_Run.png"));
         BufferedImage rollSheet = ImageIO.read(getClass().getResource("/resource/Colour1/NoOutline/120x80_PNGSheets/_Roll.png"));
+        BufferedImage attackSheet = ImageIO.read(getClass().getResource("/resource/Colour1/NoOutline/120x80_PNGSheets/_Attack.png"));
 
-        if (idleSheet == null || runSheet == null || rollSheet == null) {
+        if (idleSheet == null || runSheet == null || rollSheet == null || attackSheet == null) {
             System.out.println("Error loading images");
             return;
         }
@@ -113,6 +114,10 @@ public class GamePanel extends JPanel implements Runnable {
         framesRoll = new BufferedImage[12];
         for (int i = 0; i < 12; i++) {
             framesRoll[i] = rollSheet.getSubimage(i * frameWidth, 0, frameWidth, frameHeight);
+        }
+        framesAttack = new BufferedImage[4];
+        for (int i = 0; i < 4; i++) {
+            framesAttack[i] = attackSheet.getSubimage(i * frameWidth, 0, frameWidth, frameHeight);
         }
 
         System.out.println("Loaded sprites successfully. Frame size: " + frameWidth + "x" + frameHeight);
@@ -151,22 +156,44 @@ public class GamePanel extends JPanel implements Runnable {
         Duration timeSinceLastRoll = Duration.between(lastRollTime, Instant.now());
     
         if (keyH.left) {
+            if(playerX <= -screenWidthTemp + (tileSize * 3)) {
+                playerX += 0;
+            }
+            else
             playerX -= playerSpeed;
             direction = "left";
             isMoving = true;
         }
         if (keyH.right) {
-            playerX += playerSpeed;
-            direction = "right";
-            isMoving = true;
+            if(playerX >= screenWidthTemp - (tileSize * 3)) {
+                playerX += 0;
+            }
+            else{
+                playerX += playerSpeed;
+                direction = "right";
+                isMoving = true;
+            }
+            
         }
         if (keyH.up) {
-            playerY -= playerSpeed;
-            isMoving = true;
+            if(playerY <= -screenHeightTemp + (tileSize * 3)) {
+                playerY += 0;
+            }
+            else{
+                playerY -= playerSpeed;
+                isMoving = true;
+            }
+            
         }
         if (keyH.down) {
-            playerY += playerSpeed;
-            isMoving = true;
+            if(playerY >= screenHeightTemp - (tileSize  * 2)) {
+                playerY += 0;
+            }
+            else{
+                playerY += playerSpeed;
+                isMoving = true;
+            }
+            
         }
         if (keyH.space) {
             boolean canRoll = canRoll();
@@ -195,6 +222,11 @@ public class GamePanel extends JPanel implements Runnable {
 
             return; // Skip rest of update() while rolling
         }
+
+        if (keyH.attack) {
+            isMoving = false;
+            isRolling = false;
+        }
     }
     
     
@@ -211,7 +243,11 @@ public class GamePanel extends JPanel implements Runnable {
             spriteToDraw = framesRoll[currentFrame % framesRoll.length];
         } else if (isMoving) {
             spriteToDraw = framesRun[currentFrame % framesRun.length];
-        } else {
+        } 
+        else if(keyH.attack){
+            spriteToDraw = framesAttack[currentFrame % framesAttack.length];
+        }
+        else {
             spriteToDraw = framesIdle[currentFrame % framesIdle.length];
         }
 
