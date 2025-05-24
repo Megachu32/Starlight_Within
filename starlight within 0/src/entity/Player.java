@@ -2,11 +2,13 @@ package entity;
 
 import application.GamePanel;
 import application.KeyHandler;
+import application.MouseHandler;
 
 public class Player extends Entity{
 
     GamePanel gp;
     KeyHandler keyH;
+    MouseHandler mouseH;
     int hp;
     int maxHp;
     int xp;
@@ -18,9 +20,10 @@ public class Player extends Entity{
     int mana;
     int manaMax;
 
-    public Player(GamePanel gp, KeyHandler keyH){
+    public Player(GamePanel gp, KeyHandler keyH, MouseHandler mouseH) {
         this.gp = gp;
         this.keyH = keyH;
+        this.mouseH = mouseH;
         this.mana = 50;
         this.manaMax = 100;
         this.hp = 50;
@@ -121,6 +124,14 @@ public class Player extends Entity{
 
     public void setManaMax(int manaMax) {
         this.manaMax = manaMax;
+    }
+
+    public MouseHandler getMouseH() {
+        return mouseH;
+    }
+
+    public void setMouseH(MouseHandler mouseH) {
+        this.mouseH = mouseH;
     }
        
     

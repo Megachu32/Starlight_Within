@@ -2,15 +2,20 @@ package application;
 
 import entity.Player;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import javax.imageio.ImageIO;
 import javax.swing.*;
+
+import org.w3c.dom.events.MouseEvent;
+
 import map.Loby;
 
-public class GamePanel extends JPanel implements Runnable {
+public class GamePanel extends JPanel implements Runnable{
 
     Player player; // calling the player
 
@@ -44,12 +49,17 @@ public class GamePanel extends JPanel implements Runnable {
     boolean isMoving = false;
     boolean isRolling = false;
     boolean rolling = false;
+    boolean isAttacking = false; // for the attack animation
     int rollingCounter = 0;
+    int attackCounter = 0;
     final int rollDuration = 36; // How many frames the roll lasts (same as roll animation frames)
+    final int attackDuration = 12; // How many frames the attack lasts (same as attack animation frames)
+    int rollDelay = 0; // How long to wait before rolling again
     Instant timeNow = Instant.now();// current time for calculating rolling delay
-    Instant lastRollTime = Instant.now(); // when you last rolled
+    Instant lastRollTime = Instant  .now(); // when you last rolled
 
     KeyHandler keyH = new KeyHandler(); // calling keybaord
+    MouseHandler mouseH = new MouseHandler(); // calling mouse
     Thread gameThread;
 
     // player speed and 
@@ -84,7 +94,8 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     public GamePanel(JFrame window) throws IOException {
-        hideCursor();
+        hideCursor(); // to hide the cursor
+
         GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
         final int screenWidth = gd.getDisplayMode().getWidth();
         final int screenHeight = gd.getDisplayMode().getHeight();
@@ -99,9 +110,10 @@ public class GamePanel extends JPanel implements Runnable {
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
         this.setDoubleBuffered(true);
         this.addKeyListener(keyH);
+        this.addMouseListener(mouseH);
         this.setFocusable(true);
 
-        player = new Player(this, keyH);
+        player = new Player(this, keyH, mouseH);
 
         loadSprites();
     }
@@ -171,6 +183,7 @@ public class GamePanel extends JPanel implements Runnable {
     public void update() {
         isMoving = false;
         isRolling = false;
+        isAttacking = mouseH.attack;
 
         playerX = Math.max(0, Math.min(playerX, mapWidth - tileSize));
         playerY = Math.max(0, Math.min(playerY, mapHeight - tileSize));
@@ -225,9 +238,15 @@ public class GamePanel extends JPanel implements Runnable {
             return; // Skip rest of update() while rolling
         }
 
-        if (keyH.attack) {
+        if (mouseH.attack) { // left click mouse button
             isMoving = false;
             isRolling = false;
+            attackCounter++;
+
+            if (attackCounter >= attackDuration) {
+                mouseH.attack = false;
+                attackCounter = 0;
+            }
         }
     }
 
@@ -254,7 +273,7 @@ public class GamePanel extends JPanel implements Runnable {
         } else if (isMoving) {
             spriteToDraw = framesRun[currentFrame % framesRun.length];
         } 
-        else if(keyH.attack){
+        else if(mouseH.attack){
             spriteToDraw = framesAttack[currentFrame % framesAttack.length];
         }
         else {
@@ -283,7 +302,7 @@ public class GamePanel extends JPanel implements Runnable {
         double elapsedTime = (now - lastAnimationTime) / 1_000_000_000.0; // convert to seconds
 
         // Optional: change speed based on direction because why not
-        double delay = direction.equals("right") ? animationDelay * 2 : animationDelay;
+        double delay = animationDelay;
 
         if (elapsedTime >= delay) { //for the animation speed
             currentFrame++;
