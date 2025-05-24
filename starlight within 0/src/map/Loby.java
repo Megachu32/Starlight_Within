@@ -7,19 +7,19 @@ import javax.imageio.ImageIO;
 
 public class Loby {
     // use better naming
-    public BufferedImage mum;
+    public BufferedImage image;
     // fuck you
     public Loby() {
         try {
-            mum = ImageIO.read(getClass().getResourceAsStream("/PNG/1/terrace.png"));
+            image = ImageIO.read(getClass().getResourceAsStream("/PNG/1/terrace.png"));
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
     // to draw the actual image
     public void draw(Graphics2D g2,int x, int y, int screenWidth, int screenHeight) {
-        if (mum != null) {
-            g2.drawImage(mum, x, y, screenWidth, screenHeight, null);
+        if (image != null) {
+            g2.drawImage(image, x, y, screenWidth, screenHeight, null);
         }
     }
 }

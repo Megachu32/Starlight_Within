@@ -12,20 +12,33 @@ import map.Loby;
 
 public class GamePanel extends JPanel implements Runnable {
 
-    final int OriginalTileSize = 32;
-    final int scale = 10;
-    final int tileSize = OriginalTileSize * scale;
+    // calling loby
+    Loby loby;
 
-    final int fps = 60;
+    //map size
+    int mapHeight;
+    int mapWidth;
 
+    mapHeight = loby.image.getHeight();
+    mapWiidth = loby.image.getWidth();
+
+    final int OriginalTileSize = 32; // whats this
+    final int scale = 10; // whats this
+    final int tileSize = OriginalTileSize * scale; // whats this
+
+    final int fps = 60;// fps for the game
+
+    // initralize the variable for the image
     BufferedImage[] framesIdle;
     BufferedImage[] framesRun;
     BufferedImage[] framesRoll;
     BufferedImage[] framesAttack;
+
     int currentFrame = 0;
     int animationCounter = 0;
     final int animationSpeed = 20; // Lower number = faster animation (smaller is faster)
 
+    // sprite size
     int frameWidth;
     int frameHeight;
 
@@ -33,7 +46,7 @@ public class GamePanel extends JPanel implements Runnable {
     boolean isMoving = false;
     boolean isRolling = false;
 
-    KeyHandler keyH = new KeyHandler();
+    KeyHandler keyH = new KeyHandler(); // calling keybaord
     Thread gameThread;
     Player player = new Player(this, keyH);
 
@@ -50,13 +63,10 @@ public class GamePanel extends JPanel implements Runnable {
     final int rollDuration = 36; // How many frames the roll lasts (same as roll animation frames)
     BufferedImage currentImage;
 
-    Instant timeNow = Instant.now();
+    Instant timeNow = Instant.now();// whats this
     Instant lastRollTime = Instant.now(); // when you last rolled
 
     public boolean toggleCursor = false;
-
-    // calling loby
-    Loby loby;
 
     public boolean canRoll() {
         //TODO connect to roll method
@@ -127,7 +137,7 @@ public class GamePanel extends JPanel implements Runnable {
         gameThread = new Thread(this);
         gameThread.start();
     }
-
+    // render interval
     @Override
     public void run() {
         double renderInterval = 1000000000.0 / fps;
@@ -278,6 +288,7 @@ public class GamePanel extends JPanel implements Runnable {
         }
     }
 
+    //for the flipping of the image
     private BufferedImage flipImageHorizontally(BufferedImage image) {
         int width = image.getWidth();
         int height = image.getHeight();
@@ -287,7 +298,7 @@ public class GamePanel extends JPanel implements Runnable {
         g.dispose();
         return flipped;
     }
-
+    // why is there two mana and healt bars code in here and the other one in the user interface
     private void drawHealthAndManaBars(Graphics2D g2) {
         int healthMax = player.getMaxHp();
         int healthCurrent = player.getHp();
