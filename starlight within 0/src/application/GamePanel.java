@@ -21,9 +21,9 @@ public class GamePanel extends JPanel implements Runnable {
     int mapHeight;
     int mapWidth;
 
-    final int OriginalTileSize = 32; // whats this
-    final int scale = 10; // whats this
-    final int tileSize = OriginalTileSize * scale; // whats this
+    final int OriginalTileSize = 32; // size of spirite
+    final int scale = 10; // upscaling size of spirite
+    final int tileSize = OriginalTileSize * scale; // the size of spirite in the game
 
     final int fps = 60;// fps for the game
 
@@ -34,37 +34,40 @@ public class GamePanel extends JPanel implements Runnable {
     BufferedImage[] framesAttack;
 
     int currentFrame = 0;
-    int animationCounter = 0;
-    final int animationSpeed = 20; // Lower number = faster animation (smaller is faster)
 
     // sprite size
     int frameWidth;
     int frameHeight;
 
+    //character direction and movement
     String direction = "right";
     boolean isMoving = false;
     boolean isRolling = false;
+    boolean rolling = false;
+    int rollingCounter = 0;
+    final int rollDuration = 36; // How many frames the roll lasts (same as roll animation frames)
+    Instant timeNow = Instant.now();// current time for calculating rolling delay
+    Instant lastRollTime = Instant.now(); // when you last rolled
 
     KeyHandler keyH = new KeyHandler(); // calling keybaord
     Thread gameThread;
 
-    
+    // player speed and 
     final int playerSpeed = 7;
-
-    int screenWidthTemp;
-    int screenHeightTemp;
     int playerX = 1800;
     int playerY = 700;
 
-    boolean rolling = false;
-    int rollingCounter = 0;
-    final int rollDuration = 36; // How many frames the roll lasts (same as roll animation frames)
+    // screen size
+    int screenWidthTemp;
+    int screenHeightTemp;
+
     BufferedImage currentImage;
 
-    Instant timeNow = Instant.now();// whats this
-    Instant lastRollTime = Instant.now(); // when you last rolled
-
     public boolean toggleCursor = false;
+
+    long lastAnimationTime = System.nanoTime();
+    double animationDelay = 0.05; // seconds between frames, so ~6.6 FPS for animations
+
 
     public boolean canRoll() {
         //TODO connect to roll method
@@ -81,6 +84,7 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     public GamePanel(JFrame window) throws IOException {
+        hideCursor();
         GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
         final int screenWidth = gd.getDisplayMode().getWidth();
         final int screenHeight = gd.getDisplayMode().getHeight();
@@ -266,24 +270,24 @@ public class GamePanel extends JPanel implements Runnable {
 
         g2.drawImage(spriteToDraw,playerDrawX,playerDrawY, tileSize, tileSize, null);
         
-        drawHealthAndManaBars(g2);// whats this
+        drawHealthAndManaBars(g2);// drawing the health and mana bars
 
         g2.dispose();
 
         updateAnimation();
+
     }
 
     private void updateAnimation() {
-        animationCounter++;
-        //for the left rolling speed
-        if (animationCounter >= animationSpeed && direction.equals("left")) {
-            animationCounter = 0;
+        long now = System.nanoTime(); // get current time
+        double elapsedTime = (now - lastAnimationTime) / 1_000_000_000.0; // convert to seconds
+
+        // Optional: change speed based on direction because why not
+        double delay = direction.equals("right") ? animationDelay * 2 : animationDelay;
+
+        if (elapsedTime >= delay) { //for the animation speed
             currentFrame++;
-        }
-        //for the right rolling speed cuz it's too fast
-        else if(animationCounter >= animationSpeed * 2 && direction.equals("right")){
-            animationCounter = 0;
-            currentFrame++;
+            lastAnimationTime = now;
         }
     }
 
@@ -297,7 +301,7 @@ public class GamePanel extends JPanel implements Runnable {
         g.dispose();
         return flipped;
     }
-    // why is there two mana and healt bars code in here and the other one in the user interface
+    // to get the player health and mana then transfer it to the interface to draw as a layer
     private void drawHealthAndManaBars(Graphics2D g2) {
         int healthMax = player.getMaxHp();
         int healthCurrent = player.getHp();
