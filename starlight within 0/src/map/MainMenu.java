@@ -14,6 +14,8 @@ public class MainMenu {
     private JFrame frame;
     private BufferedImage mainMenuImage;
 
+    int x, y;
+
     // Custom JPanel that draws the background image
     class MainMenuPanel extends JPanel {
         private BufferedImage backgroundImage;
@@ -68,6 +70,10 @@ public class MainMenu {
             e.printStackTrace();
         }
 
+        GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+        x = gd.getDisplayMode().getWidth();
+        y = gd.getDisplayMode().getHeight();
+
         JPanel buttonPanel = new JPanel(null);
         buttonPanel.setOpaque(false);
 
@@ -79,7 +85,7 @@ public class MainMenu {
             startButton.setHorizontalTextPosition(JButton.CENTER);
             startButton.setVerticalTextPosition(JButton.CENTER);
         }
-        startButton.setBounds(700, 820, 200, 50);
+        startButton.setBounds(x - 1200, y - 250, 200, 50);
         startButton.setBorderPainted(false);
         startButton.setContentAreaFilled(false);
         startButton.setFocusPainted(false);
@@ -94,7 +100,7 @@ public class MainMenu {
             exitButton.setHorizontalTextPosition(JButton.CENTER);
             exitButton.setVerticalTextPosition(JButton.CENTER);
         }
-        exitButton.setBounds(1000, 820, 200, 50);
+        exitButton.setBounds(x - 900, y - 250, 200, 50);
         exitButton.setBorderPainted(false);
         exitButton.setContentAreaFilled(false);
         exitButton.setFocusPainted(false);
