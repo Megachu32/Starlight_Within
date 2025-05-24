@@ -16,6 +16,18 @@ public class MainMenu {
 
     int x, y;
 
+    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+    int screenWidth = screenSize.width;
+    int screenHeight = screenSize.height;
+
+    int buttonWidth = 200;
+    int buttonHeight = 60;
+    int spacing = 60; // space between buttons
+
+    int totalWidth = (buttonWidth * 2) + spacing;
+    int xStart = (screenWidth - totalWidth) / 2 + 260; // 20px from left edge
+    int yPos = screenHeight - buttonHeight - 20; // 80px from bottom
+
     // Custom JPanel that draws the background image
     class MainMenuPanel extends JPanel {
         private BufferedImage backgroundImage;
@@ -70,9 +82,6 @@ public class MainMenu {
             e.printStackTrace();
         }
 
-        GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-        x = gd.getDisplayMode().getWidth();
-        y = gd.getDisplayMode().getHeight();
 
         JPanel buttonPanel = new JPanel(null);
         buttonPanel.setOpaque(false);
@@ -85,7 +94,7 @@ public class MainMenu {
             startButton.setHorizontalTextPosition(JButton.CENTER);
             startButton.setVerticalTextPosition(JButton.CENTER);
         }
-        startButton.setBounds(x - 1200, y - 250, 200, 50);
+        startButton.setBounds(xStart, yPos, buttonWidth, buttonHeight);
         startButton.setBorderPainted(false);
         startButton.setContentAreaFilled(false);
         startButton.setFocusPainted(false);
@@ -100,12 +109,19 @@ public class MainMenu {
             exitButton.setHorizontalTextPosition(JButton.CENTER);
             exitButton.setVerticalTextPosition(JButton.CENTER);
         }
-        exitButton.setBounds(x - 900, y - 250, 200, 50);
+        exitButton.setBounds(xStart + buttonWidth + spacing, yPos, buttonWidth, buttonHeight);
         exitButton.setBorderPainted(false);
         exitButton.setContentAreaFilled(false);
         exitButton.setFocusPainted(false);
         exitButton.setOpaque(false);
         buttonPanel.add(exitButton);
+
+        JPanel wrapper = new JPanel();
+        wrapper.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 20)); // Centered with 20 px top margin
+        wrapper.add(buttonPanel);
+
+        // Add to bottom
+        frame.add(wrapper, BorderLayout.SOUTH);
 
         backgroundPanel.add(buttonPanel, BorderLayout.CENTER);
 
