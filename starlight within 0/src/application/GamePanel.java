@@ -14,6 +14,8 @@ public class GamePanel extends JPanel implements Runnable {
 
     Player player; // calling the player
 
+    Music musik;
+
     // calling loby
     Loby loby;
 
@@ -86,8 +88,13 @@ public class GamePanel extends JPanel implements Runnable {
         final int screenHeight = gd.getDisplayMode().getHeight();
         screenWidthTemp = screenWidth;
         screenHeightTemp = screenHeight;
+        // calling loby
         loby = new Loby();
 
+        // calling music player
+        musik = new Music();
+        // load music
+        musik.playMusic("/musik/lobyMusic.wav");
         // getingy the map size
         mapHeight = loby.image.getHeight();
         mapWidth = loby.image.getWidth();
