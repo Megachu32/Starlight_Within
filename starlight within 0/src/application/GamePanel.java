@@ -53,8 +53,8 @@ public class GamePanel extends JPanel implements Runnable {
 
     int screenWidthTemp;
     int screenHeightTemp;
-    int playerX = screenWidthTemp/ 2;
-    int playerY = screenHeightTemp / 2;
+    int playerX = 1800;
+    int playerY = 700;
 
     boolean rolling = false;
     int rollingCounter = 0;
@@ -233,8 +233,11 @@ public class GamePanel extends JPanel implements Runnable {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
         // camrea initialization
-        int cameraX = playerX - screenWidthTemp / 2;
-        int cameraY = playerY - screenHeightTemp / 2;
+        // Center the camera on the player
+        int cameraX = playerX - screenWidthTemp / 2 + tileSize / 2;
+        int cameraY = playerY - screenHeightTemp / 2 + tileSize / 2;
+
+        // Clamp camera to map bounds
         cameraX = Math.max(0, Math.min(cameraX, mapWidth - screenWidthTemp));
         cameraY = Math.max(0, Math.min(cameraY, mapHeight - screenHeightTemp));
         // drawing the map
