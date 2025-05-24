@@ -4,7 +4,7 @@
 
     public class KeyHandler implements KeyListener {
 
-        public static boolean up, down, left, right, space, attack, block;
+        public static boolean up, down, left, right, space, block;
 
         // for when a key is typed
         @Override
@@ -32,7 +32,7 @@
                 space = true;
             }
             else if(code == KeyEvent.VK_E){
-                attack = true;
+                
             }
             else if(code == KeyEvent.VK_Q){
                 block = true;
@@ -54,7 +54,7 @@
                 right = false;
             }
             else if(code == KeyEvent.VK_E){
-                attack = false;
+                
             }
             else if(code == KeyEvent.VK_Q){
                 block = false;
