@@ -12,20 +12,32 @@ import map.Loby;
 
 public class GamePanel extends JPanel implements Runnable {
 
-    final int OriginalTileSize = 32;
-    final int scale = 10;
-    final int tileSize = OriginalTileSize * scale;
+    Player player; // calling the player
 
-    final int fps = 60;
+    // calling loby
+    Loby loby;
 
+    //map size
+    int mapHeight;
+    int mapWidth;
+
+    final int OriginalTileSize = 32; // whats this
+    final int scale = 10; // whats this
+    final int tileSize = OriginalTileSize * scale; // whats this
+
+    final int fps = 60;// fps for the game
+
+    // initralize the variable for the image
     BufferedImage[] framesIdle;
     BufferedImage[] framesRun;
     BufferedImage[] framesRoll;
     BufferedImage[] framesAttack;
+
     int currentFrame = 0;
     int animationCounter = 0;
     final int animationSpeed = 20; // Lower number = faster animation (smaller is faster)
 
+    // sprite size
     int frameWidth;
     int frameHeight;
 
@@ -33,9 +45,8 @@ public class GamePanel extends JPanel implements Runnable {
     boolean isMoving = false;
     boolean isRolling = false;
 
-    KeyHandler keyH = new KeyHandler();
+    KeyHandler keyH = new KeyHandler(); // calling keybaord
     Thread gameThread;
-    Player player = new Player(this, keyH);
 
     
     final int playerSpeed = 7;
@@ -50,13 +61,10 @@ public class GamePanel extends JPanel implements Runnable {
     final int rollDuration = 36; // How many frames the roll lasts (same as roll animation frames)
     BufferedImage currentImage;
 
-    Instant timeNow = Instant.now();
+    Instant timeNow = Instant.now();// whats this
     Instant lastRollTime = Instant.now(); // when you last rolled
 
     public boolean toggleCursor = false;
-
-    // calling loby
-    Loby loby;
 
     public boolean canRoll() {
         //TODO connect to roll method
@@ -79,10 +87,17 @@ public class GamePanel extends JPanel implements Runnable {
         screenWidthTemp = screenWidth;
         screenHeightTemp = screenHeight;
         loby = new Loby();
+
+        // getingy the map size
+        mapHeight = loby.image.getHeight();
+        mapWidth = loby.image.getWidth();
+
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
         this.setDoubleBuffered(true);
         this.addKeyListener(keyH);
         this.setFocusable(true);
+
+        player = new Player(this, keyH);
 
         loadSprites();
     }
@@ -127,7 +142,7 @@ public class GamePanel extends JPanel implements Runnable {
         gameThread = new Thread(this);
         gameThread.start();
     }
-
+    // render interval
     @Override
     public void run() {
         double renderInterval = 1000000000.0 / fps;
@@ -152,48 +167,31 @@ public class GamePanel extends JPanel implements Runnable {
     public void update() {
         isMoving = false;
         isRolling = false;
+
+        playerX = Math.max(0, Math.min(playerX, mapWidth - tileSize));
+        playerY = Math.max(0, Math.min(playerY, mapHeight - tileSize));
+
+        
     
         Duration timeSinceLastRoll = Duration.between(lastRollTime, Instant.now());
     
         if (keyH.left) {
-            if(playerX <= -screenWidthTemp + (tileSize * 3)) {
-                playerX += 0;
-            }
-            else
             playerX -= playerSpeed;
             direction = "left";
             isMoving = true;
         }
         if (keyH.right) {
-            if(playerX >= screenWidthTemp - (tileSize * 3)) {
-                playerX += 0;
-            }
-            else{
                 playerX += playerSpeed;
                 direction = "right";
                 isMoving = true;
-            }
-            
         }
         if (keyH.up) {
-            if(playerY <= -screenHeightTemp + (tileSize * 3)) {
-                playerY += 0;
-            }
-            else{
                 playerY -= playerSpeed;
                 isMoving = true;
-            }
-            
         }
         if (keyH.down) {
-            if(playerY >= screenHeightTemp - (tileSize  * 2)) {
-                playerY += 0;
-            }
-            else{
                 playerY += playerSpeed;
                 isMoving = true;
-            }
-            
         }
         if (keyH.space) {
             boolean canRoll = canRoll();
@@ -228,15 +226,20 @@ public class GamePanel extends JPanel implements Runnable {
             isRolling = false;
         }
     }
-    
-    
+
+    // for actually outputting the image
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
-
-        loby.draw(g2, -playerX, -playerY, screenWidthTemp, screenHeightTemp);
-
+        // camrea initialization
+        int cameraX = playerX - screenWidthTemp / 2;
+        int cameraY = playerY - screenHeightTemp / 2;
+        cameraX = Math.max(0, Math.min(cameraX, mapWidth - screenWidthTemp));
+        cameraY = Math.max(0, Math.min(cameraY, mapHeight - screenHeightTemp));
+        // drawing the map
+        g2.drawImage(loby.image, 0, 0, screenWidthTemp, screenHeightTemp, cameraX, cameraY, cameraX + screenWidthTemp, cameraY + screenHeightTemp, this);
+        // drwing the actual player
         BufferedImage spriteToDraw = null;
 
         if (isRolling) {
@@ -254,10 +257,13 @@ public class GamePanel extends JPanel implements Runnable {
         if (direction.equals("left")) {
             spriteToDraw = flipImageHorizontally(spriteToDraw);
         }
+        // drawing the player
+        int playerDrawX = playerX - cameraX;
+        int playerDrawY = playerY - cameraY;
 
-        g2.drawImage(spriteToDraw, (screenWidthTemp - tileSize) / 2, (screenHeightTemp - (tileSize * 2)) / 2, tileSize, tileSize, this);
+        g2.drawImage(spriteToDraw,playerDrawX,playerDrawY, tileSize, tileSize, null);
         
-        drawHealthAndManaBars(g2);
+        drawHealthAndManaBars(g2);// whats this
 
         g2.dispose();
 
@@ -278,6 +284,7 @@ public class GamePanel extends JPanel implements Runnable {
         }
     }
 
+    //for the flipping of the image
     private BufferedImage flipImageHorizontally(BufferedImage image) {
         int width = image.getWidth();
         int height = image.getHeight();
@@ -287,7 +294,7 @@ public class GamePanel extends JPanel implements Runnable {
         g.dispose();
         return flipped;
     }
-
+    // why is there two mana and healt bars code in here and the other one in the user interface
     private void drawHealthAndManaBars(Graphics2D g2) {
         int healthMax = player.getMaxHp();
         int healthCurrent = player.getHp();
