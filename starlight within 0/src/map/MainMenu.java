@@ -14,8 +14,22 @@ public class MainMenu {
     private JFrame frame;
     private BufferedImage mainMenuImage;
 
+    int x, y;
+
+    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+    int screenWidth = screenSize.width;
+    int screenHeight = screenSize.height;
+
+    int buttonWidth = 200;
+    int buttonHeight = 60;
+    int spacing = 60; // space between buttons
+
+    int totalWidth = (buttonWidth * 2) + spacing;
+    int xStart = (screenWidth - totalWidth) / 2 + 260; // 20px from left edge
+    int yPos = screenHeight - buttonHeight - 20; // 80px from bottom
+
     // Custom JPanel that draws the background image
-    class MainMenuPanel extends JPanel {
+    class MainMenuPanel extends JPanel { // class for the main menu panel to display the background image
         private BufferedImage backgroundImage;
 
         public MainMenuPanel(BufferedImage image) {
@@ -32,7 +46,7 @@ public class MainMenu {
         }
     }
 
-    // Constructor
+    // main class used for adding buttons
     public MainMenu() {
         frame = new JFrame("My Game");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
