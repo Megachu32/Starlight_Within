@@ -1,13 +1,17 @@
 package application;
 
+import entity.Monster;
 import entity.Player;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 
@@ -85,6 +89,12 @@ public class GamePanel extends JPanel implements Runnable{
     long lastAnimationTime = System.nanoTime();
     double animationDelay = 0.05; // seconds between frames, so ~6.6 FPS for animations
 
+    //other variables
+    BufferedImage punchingBag;
+    int bagX, bagY; // position of punching bag
+
+    //monsters variable
+    ArrayList<Monster> monsters = new ArrayList<>(); // List to hold monsters
 
     public boolean canRoll() {
         //TODO connect to roll method
@@ -135,8 +145,9 @@ public class GamePanel extends JPanel implements Runnable{
         BufferedImage runSheet = ImageIO.read(getClass().getResource("/resource/Colour1/NoOutline/120x80_PNGSheets/_Run.png"));
         BufferedImage rollSheet = ImageIO.read(getClass().getResource("/resource/Colour1/NoOutline/120x80_PNGSheets/_Roll.png"));
         BufferedImage attackSheet = ImageIO.read(getClass().getResource("/resource/Colour1/NoOutline/120x80_PNGSheets/_Attack.png"));
+        punchingBag = ImageIO.read(getClass().getResource("/Samll things/Untitled24_20250525142430.png"));
 
-        if (idleSheet == null || runSheet == null || rollSheet == null || attackSheet == null) {
+        if (idleSheet == null || runSheet == null || rollSheet == null || attackSheet == null || punchingBag == null) {
             System.out.println("Error loading images");
             return;
         }
@@ -274,6 +285,18 @@ public class GamePanel extends JPanel implements Runnable{
         int cameraX = playerX - screenWidthTemp / 2 + tileSize / 2;
         int cameraY = playerY - screenHeightTemp / 2 + tileSize / 2;
 
+        // coordinates for the punching bag
+        bagX = mapWidth / 2 - punchingBag.getWidth() / 2;
+        bagY = mapHeight / 2 - punchingBag.getHeight() / 2;
+
+        // Center the punching bag on the screen
+        int centerX = screenWidthTemp / 2 - punchingBag.getWidth() / 2;
+        int centerY = screenHeightTemp / 2 - punchingBag.getHeight() / 2;
+
+        // Adjust the punching bag position based on camera so it stays in the center
+        int drawBagX = bagX - cameraX;
+        int drawBagY = bagY - cameraY;
+
         // Clamp camera to map bounds
         cameraX = Math.max(0, Math.min(cameraX, mapWidth - screenWidthTemp));
         cameraY = Math.max(0, Math.min(cameraY, mapHeight - screenHeightTemp));
@@ -281,6 +304,13 @@ public class GamePanel extends JPanel implements Runnable{
         g2.drawImage(currentMap.getImage(), 0, 0, screenWidthTemp, screenHeightTemp, cameraX, cameraY, cameraX + screenWidthTemp, cameraY + screenHeightTemp, this);
         // drwing the actual player
         BufferedImage spriteToDraw = null;
+
+        // draws the punching bag if the current map is Traning
+        if(currentMap instanceof Traning) {
+            if (punchingBag != null) {
+                g2.drawImage(punchingBag, drawBagX, drawBagY, 250, 250, this);
+            }
+        }
 
         if (isRolling) {
             spriteToDraw = framesRoll[currentFrame % framesRoll.length];
