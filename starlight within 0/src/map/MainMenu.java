@@ -1,13 +1,11 @@
 package map;
 
 import application.GamePanel;
-
-import javax.imageio.ImageIO;
-import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import javax.imageio.ImageIO;
+import javax.swing.*;
 
 public class MainMenu {
 
@@ -63,6 +61,9 @@ public class MainMenu {
             System.err.println("Error: Main menu image not found.");
             return;
         }
+        int balls;
+        int rage;
+        int fuck;
 
         MainMenuPanel backgroundPanel = new MainMenuPanel(mainMenuImage);
         setupMenu(backgroundPanel);
