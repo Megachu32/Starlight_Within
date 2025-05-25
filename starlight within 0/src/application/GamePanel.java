@@ -14,6 +14,8 @@ import javax.swing.*;
 import org.w3c.dom.events.MouseEvent;
 
 import map.Loby;
+import map.Maps;
+import map.Traning;
 
 public class GamePanel extends JPanel implements Runnable{
 
@@ -21,12 +23,15 @@ public class GamePanel extends JPanel implements Runnable{
 
     Music musik;
 
-    // calling loby
-    Loby loby;
+    /*map variuables*/
+    // calling mapps
+    Maps currentMap;
 
     //map size
     int mapHeight;
     int mapWidth;
+
+    String mapName = "loby"; // current map name
 
     final int OriginalTileSize = 32; // size of spirite
     final int scale = 10; // upscaling size of spirite
@@ -103,16 +108,16 @@ public class GamePanel extends JPanel implements Runnable{
         final int screenHeight = gd.getDisplayMode().getHeight();
         screenWidthTemp = screenWidth;
         screenHeightTemp = screenHeight;
-        // calling loby
-        loby = new Loby();
+        // calling currentMap
+        currentMap = new Loby();
 
         // calling music player
         musik = new Music();
         // load music
         musik.playMusic("/musik/lobyMusic.wav");
         // getingy the map size
-        mapHeight = loby.image.getHeight();
-        mapWidth = loby.image.getWidth();
+        mapHeight = currentMap.getImage().getHeight();
+        mapWidth = currentMap.getImage().getWidth();
 
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
         this.setDoubleBuffered(true);
@@ -192,10 +197,12 @@ public class GamePanel extends JPanel implements Runnable{
         isRolling = false;
         isAttacking = mouseH.attack;
 
-        playerX = Math.max(0, Math.min(playerX, mapWidth - tileSize));
-        playerY = Math.max(0, Math.min(playerY, mapHeight - tileSize));
+        playerX = Math.max(0, Math.min(playerX, mapWidth - tileSize)); // Clamp playerX to map bounds so they can't go out of the map
+        playerY = Math.max(0, Math.min(playerY, mapHeight - tileSize)); // Clamp playerY to map bounds so they can't go out of the map
 
-        
+        if(Math.max(0, Math.min(playerX, mapWidth - tileSize)) == 0 || Math.max(0, Math.min(playerY, mapHeight - tileSize)) == 0) {
+            mapTeleport(mapName); // teleport to the map if the player is at the edge of the map
+        }
     
         Duration timeSinceLastRoll = Duration.between(lastRollTime, Instant.now());
     
@@ -271,7 +278,7 @@ public class GamePanel extends JPanel implements Runnable{
         cameraX = Math.max(0, Math.min(cameraX, mapWidth - screenWidthTemp));
         cameraY = Math.max(0, Math.min(cameraY, mapHeight - screenHeightTemp));
         // drawing the map
-        g2.drawImage(loby.image, 0, 0, screenWidthTemp, screenHeightTemp, cameraX, cameraY, cameraX + screenWidthTemp, cameraY + screenHeightTemp, this);
+        g2.drawImage(currentMap.getImage(), 0, 0, screenWidthTemp, screenHeightTemp, cameraX, cameraY, cameraX + screenWidthTemp, cameraY + screenHeightTemp, this);
         // drwing the actual player
         BufferedImage spriteToDraw = null;
 
@@ -374,6 +381,31 @@ public class GamePanel extends JPanel implements Runnable{
 
     public void showCursor() {
         setCursor(Cursor.getDefaultCursor());
+    }
+
+    public void mapTeleport(String mapName) {
+
+        System.out.println("Player is at the edge of the map, teleporting to the next map.");
+        if(mapName.equals("loby") && direction.equals("left")){
+            mapName = "traning";
+        }
+        if(mapName.equals("traning") && direction.equals("right")){
+            mapName = "loby";
+        }
+
+        if (mapName.equals("loby")) {
+            currentMap = new Loby();
+            mapHeight = currentMap.getImage().getHeight();
+            mapWidth = currentMap.getImage().getWidth();
+            playerX = 1800;
+            playerY = 700;
+        } else if (mapName.equals("traning")) {
+            currentMap = new Traning();
+            mapHeight = currentMap.getImage().getHeight();
+            mapWidth = currentMap.getImage().getWidth();
+            playerX = 1800;
+            playerY = 700;
+        }
     }
 
     

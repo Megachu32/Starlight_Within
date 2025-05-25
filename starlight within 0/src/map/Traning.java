@@ -5,13 +5,13 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 
-public class Loby extends Maps{
+public class Traning extends Maps{
     // use better naming
     public BufferedImage image;
     // fuck you
-    public Loby() {
+    public Traning() {
         try {
-            image = ImageIO.read(getClass().getResourceAsStream("/PNG/1/terrace.png"));
+            image = ImageIO.read(getClass().getResourceAsStream("/PNG/4/dead forest.png"));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -22,10 +22,11 @@ public class Loby extends Maps{
             g2.drawImage(image, x, y, screenWidth, screenHeight, null);
         }
     }
-
     @Override
     public BufferedImage getImage() {
         // TODO Auto-generated method stub
         return image;
     }
+
+    
 }
