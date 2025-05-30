@@ -11,7 +11,10 @@ import java.lang.reflect.Array;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
 import javax.imageio.ImageIO;
 import javax.swing.*;
 
@@ -23,6 +26,12 @@ import map.Traning;
 
 public class GamePanel extends JPanel implements Runnable{
 
+<<<<<<< Updated upstream
+=======
+    // bounde for the game
+    ArrayList<Rectangle> bounds = new ArrayList<>(); // List to hold boundaries
+    
+>>>>>>> Stashed changes
     Player player; // calling the player
 
     Music musik;
@@ -40,6 +49,13 @@ public class GamePanel extends JPanel implements Runnable{
     final int OriginalTileSize = 32; // size of spirite
     final int scale = 10; // upscaling size of spirite
     final int tileSize = OriginalTileSize * scale; // the size of spirite in the game
+<<<<<<< Updated upstream
+=======
+    {
+    bounds.add(new Rectangle(0, 500,10000,5));
+    bounds.add(new Rectangle(0, 1850,10000,5));
+    }
+>>>>>>> Stashed changes
 
     final int fps = 60;// fps for the game
 
@@ -438,5 +454,11 @@ public class GamePanel extends JPanel implements Runnable{
         }
     }
 
+<<<<<<< Updated upstream
+=======
+    public void CheckCollision() {
+    }
+
+>>>>>>> Stashed changes
     
 }
