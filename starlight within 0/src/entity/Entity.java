@@ -2,7 +2,7 @@ package entity;
 
 public class Entity {
     protected int x, y; // Entity Cordinates 
-    protected int speed;// Entity's speed
+    protected float speed;// Entity's speed
     protected String namaMoster; 
     protected int jenisMosnter;
     protected int physicalMosterDamgae;
@@ -42,7 +42,7 @@ public class Entity {
         this.y = y;
     }
 
-    public int getSpeed() {
+    public float getSpeed() {
         return speed;
     }
 

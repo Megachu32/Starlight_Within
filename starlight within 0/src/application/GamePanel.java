@@ -78,6 +78,12 @@ public class GamePanel extends JPanel implements Runnable{
     long lastAnimationTime = System.nanoTime();
     double animationDelay = 0.05; // seconds between frames, so ~6.6 FPS for animations
 
+    //other variables
+    BufferedImage punchingBag;
+    int bagX, bagY; // position of punching bag
+
+    //monsters variable
+    ArrayList<Monster> monsters = new ArrayList<>(); // List to hold monsters
 
     public boolean canRoll() {
         //TODO connect to roll method
@@ -101,7 +107,8 @@ public class GamePanel extends JPanel implements Runnable{
         final int screenHeight = gd.getDisplayMode().getHeight();
         screenWidthTemp = screenWidth;
         screenHeightTemp = screenHeight;
-        loby = new Loby();
+        // calling currentMap
+        currentMap = new Loby();
 
         // getingy the map size
         mapHeight = loby.image.getHeight();
@@ -144,6 +151,7 @@ public class GamePanel extends JPanel implements Runnable{
 
         framesRoll = new BufferedImage[12];
         for (int i = 0; i < 12; i++) {
+            System.out.println("Loading roll frame: " + i);
             framesRoll[i] = rollSheet.getSubimage(i * frameWidth, 0, frameWidth, frameHeight);
         }
         framesAttack = new BufferedImage[4];
@@ -268,6 +276,13 @@ public class GamePanel extends JPanel implements Runnable{
         // drwing the actual player
         BufferedImage spriteToDraw = null;
 
+        // draws the punching bag if the current map is Traning
+        if(currentMap instanceof Traning) {
+            if (punchingBag != null) {
+                g2.drawImage(punchingBag, drawBagX, drawBagY, 250, 250, this);
+            }
+        }
+
         if (isRolling) {
             spriteToDraw = framesRoll[currentFrame % framesRoll.length];
         } else if (isMoving) {
@@ -288,6 +303,31 @@ public class GamePanel extends JPanel implements Runnable{
         int playerDrawY = playerY - cameraY;
 
         g2.drawImage(spriteToDraw,playerDrawX,playerDrawY, tileSize, tileSize, null);
+
+        if(currentMap instanceof Loby) {
+            // System.out.println("runing monster spawn");
+            for(int m = 0; m < monsterSpawn.monsterList.size(); m++) {
+                Monster monster = monsterSpawn.monsterList.get(m);
+                BufferedImage[] framesMonsters = monster.getFrameMonsters();
+                if (monster.getImage() != null) {
+                    g2.drawImage(framesMonsters[currentFrame % framesMonsters.length], monster.getX() - cameraX, monster.getY() - cameraY, tileSize / 2, tileSize / 2, this);
+
+                    if(monsterSpawn.monsterList.get(m).getX() > playerX) {
+                        monsterSpawn.monsterList.get(m).setX((int) (monsterSpawn.monsterList.get(m).getX() - monsterSpawn.monsterList.get(m).getSpeed())); // move left
+                    } 
+                    if(monsterSpawn.monsterList.get(m).getY() > playerY) {
+                        monsterSpawn.monsterList.get(m).setY((int) (monsterSpawn.monsterList.get(m).getY() - monsterSpawn.monsterList.get(m).getSpeed())); // move left
+                    }
+                    if(monsterSpawn.monsterList.get(m).getY() < playerY) {
+                        monsterSpawn.monsterList.get(m).setY((int) (monsterSpawn.monsterList.get(m).getY() + monsterSpawn.monsterList.get(m).getSpeed())); // move left
+                    }
+                    if(monsterSpawn.monsterList.get(m).getX() < playerX) {
+                        monsterSpawn.monsterList.get(m).setX((int) (monsterSpawn.monsterList.get(m).getX() + monsterSpawn.monsterList.get(m).getSpeed())); // move left
+                    } 
+                }
+            }
+            // System.out.println("successfully run monster spawn");
+        }
         
         drawHealthAndManaBars(g2);// drawing the health and mana bars
 
