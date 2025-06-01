@@ -23,6 +23,8 @@ public class GamePanel extends JPanel implements Runnable{
     ArrayList<Hitbox> hitboxes = new ArrayList<>(); // List to hold hitboxes
 
     UpgradePanel upgradePanel = new UpgradePanel(null);
+
+    boolean visible = false; // for the upgrade panel visibility
     
 
     Player player; // calling the player
@@ -52,6 +54,19 @@ public class GamePanel extends JPanel implements Runnable{
     hitboxes.add(new Hitbox(3000, 900, 100, 100, "idk1"));
     hitboxes.add(new Hitbox(3000, 1700, 100, 100, "idk2")); // Example hitbox, adjust as needed
     }
+    public void setHitboxForMap(String mapName) {
+    hitboxes.clear();
+
+    if (mapName.equals("loby")) {
+        hitboxes.add(new Hitbox(500, 900, 100, 100, "shop"));
+        hitboxes.add(new Hitbox(500, 1700, 100, 100, "upgrade"));
+        hitboxes.add(new Hitbox(3000, 900, 100, 100, "idk1"));
+        hitboxes.add(new Hitbox(3000, 1700, 100, 100, "idk2"));
+    } else if (mapName.equals("traning")) {
+        hitboxes.add(new Hitbox(3000, 900, 100, 100, "idk1"));
+        hitboxes.add(new Hitbox(3000, 1700, 100, 100, "idk2"));
+    }
+}
 
     public void setBoundsForMap(String mapName) {
     bounds.clear(); // Remove old bounds
@@ -66,12 +81,7 @@ public class GamePanel extends JPanel implements Runnable{
             // add your specific Training bounds here
         }
     }
-    public void setHitboxForMap(String maName){
-        hitboxes.clear();
-        if (maName.equals("loby")) {
-        } else if (maName.equals("traning")) {
-        }
-    }
+    // Removed duplicate method setHitboxForMap(String maName)
 
 
     final int fps = 60;// fps for the game
@@ -153,10 +163,15 @@ public class GamePanel extends JPanel implements Runnable{
         // calling currentMap
         currentMap = new Loby();
 
-        upgradePanel.setVisible(false); // initially hidden
-        this.setLayout(null); // disable layout manager
-        upgradePanel.setBounds(100, 100, 400, 300); // adjust position on screen
-        this.add(upgradePanel);
+        JFrame frame = window; // Initialize the frame variable
+        JLayeredPane layeredPane = frame.getLayeredPane();
+        UpgradePanel upgradePanel = new UpgradePanel(frame);
+        upgradePanel.setBounds(0,0, 400, 500); // full size
+        layeredPane.add(upgradePanel, JLayeredPane.POPUP_LAYER);
+        upgradePanel.setVisible(visible); // Initially hide the upgrade panel
+
+
+
 
         // calling music player
         musik = new Music();
@@ -171,6 +186,7 @@ public class GamePanel extends JPanel implements Runnable{
         this.addKeyListener(keyH);
         this.addMouseListener(mouseH);
         this.setFocusable(true);
+        System.out.println("how many time dot game panel run");
 
         player = new Player(this, keyH, mouseH);
 
@@ -259,7 +275,11 @@ public class GamePanel extends JPanel implements Runnable{
             System.out.println("Player entered shop");
             break;
         case "upgrade":
+            visible = true;// Show the upgrade panel
+            System.out.println("Player entered upgrade area");
+            repaint();
             break;
+         // Show the upgrade panel
     }
 }
 
@@ -345,6 +365,7 @@ public class GamePanel extends JPanel implements Runnable{
             }
         }
         if (keyH.space) {
+            visible = true;
             boolean canRoll = canRoll();
             if (canRoll) {
                 rolling = true;
@@ -355,6 +376,8 @@ public class GamePanel extends JPanel implements Runnable{
             }
         }
         if (rolling) {
+            System.out.println("Player entered upgrade area");
+            repaint();
             isRolling = true;
             rollingCounter++;
 
@@ -544,6 +567,7 @@ public class GamePanel extends JPanel implements Runnable{
         playerX = 1800;
         playerY = 700;
         setBoundsForMap("loby");
+        setHitboxForMap("loby");
     } else if (mapName.equals("traning")) {
         currentMap = new Traning();
         mapHeight = currentMap.getImage().getHeight();
@@ -551,6 +575,8 @@ public class GamePanel extends JPanel implements Runnable{
         playerX = 1800;
         playerY = 700;
         setBoundsForMap("traning");
+        setHitboxForMap("traning");
+        upgradePanel.setVisible(true);
     }
 }
 
