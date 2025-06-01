@@ -1,11 +1,16 @@
 package entity;
 
+import java.awt.image.BufferedImage;
+import java.nio.Buffer;
+
 public class Monster extends Entity {
+
+    BufferedImage image;
 
     public Monster(int x, int y, int speed, String namaMoster, int jenisMosnter, 
                    int physicalMosterDamgae, int physicalMonsterArmor, 
                    int magicalMonsterDamage, int magicalMonsterArmor, 
-                   int monsterHp, int monsterDrop) {
+                   int monsterHp, int monsterDrop, BufferedImage image) {
         super();
         this.x = x;
         this.y = y;
@@ -18,6 +23,7 @@ public class Monster extends Entity {
         this.magicalMonsterArmor = magicalMonsterArmor;
         this.monsterHp = monsterHp;
         this.monsterDrop = monsterDrop;
+        this.image = image;
     }
 
     @Override
@@ -182,6 +188,22 @@ public class Monster extends Entity {
         return super.toString();
     }
 
-    
+    public BufferedImage[] getFrame() {
+        BufferedImage[] images = new BufferedImage[4];
+        int frameWidth = image.getWidth() / 10 + 10;
+        int frameHeight = image.getHeight();
+        for (int i = 0; i < 4; i++) {
+            images[i] = image.getSubimage(i * frameWidth, 0, frameWidth, frameHeight);
+        }
+        return images;
+    }
+
+    public BufferedImage getImage() {
+        return image;
+    }
+
+    public void setImage(BufferedImage image) {
+        this.image = image;
+    }
     
 }
