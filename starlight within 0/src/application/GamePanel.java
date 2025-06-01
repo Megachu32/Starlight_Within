@@ -13,6 +13,7 @@ import javax.swing.*;
 import map.Loby;
 import map.Maps;
 import map.Traning;
+import map.UpgradePanel;
 
 public class GamePanel extends JPanel implements Runnable{
 
@@ -20,6 +21,8 @@ public class GamePanel extends JPanel implements Runnable{
     // bounde for the game
     ArrayList<Rectangle> bounds = new ArrayList<>(); // List to hold boundaries
     ArrayList<Hitbox> hitboxes = new ArrayList<>(); // List to hold hitboxes
+
+    UpgradePanel upgradePanel = new UpgradePanel(null);
     
 
     Player player; // calling the player
@@ -44,7 +47,10 @@ public class GamePanel extends JPanel implements Runnable{
     bounds.add(new Rectangle(0, 1850, 10000, 5));
     }
     {
-    hitboxes.add(new Hitbox(400, 700, 100, 100, "shop")); // Example hitbox, adjust as needed
+    hitboxes.add(new Hitbox(500, 900, 100, 100, "shop"));
+    hitboxes.add(new Hitbox(500, 1700, 100, 100, "upgrade"));
+    hitboxes.add(new Hitbox(3000, 900, 100, 100, "idk1"));
+    hitboxes.add(new Hitbox(3000, 1700, 100, 100, "idk2")); // Example hitbox, adjust as needed
     }
 
     public void setBoundsForMap(String mapName) {
@@ -139,7 +145,6 @@ public class GamePanel extends JPanel implements Runnable{
 
     public GamePanel(JFrame window) throws IOException {
         hideCursor(); // to hide the cursor
-
         GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
         final int screenWidth = gd.getDisplayMode().getWidth();
         final int screenHeight = gd.getDisplayMode().getHeight();
@@ -147,6 +152,11 @@ public class GamePanel extends JPanel implements Runnable{
         screenHeightTemp = screenHeight;
         // calling currentMap
         currentMap = new Loby();
+
+        upgradePanel.setVisible(false); // initially hidden
+        this.setLayout(null); // disable layout manager
+        upgradePanel.setBounds(100, 100, 400, 300); // adjust position on screen
+        this.add(upgradePanel);
 
         // calling music player
         musik = new Music();
@@ -245,14 +255,10 @@ public class GamePanel extends JPanel implements Runnable{
     }
     private void onHitboxTrigger(Hitbox hb) {
     switch (hb.id) {
-        case "TreasureRoom":
-            System.out.println("Player entered the treasure room!");
+        case "shop":
+            System.out.println("Player entered shop");
             break;
-        case "EnemySpawn":
-            System.out.println("Enemies are spawning!");
-            break;
-        case "HealingZone":
-            System.out.println("Player is healing...");
+        case "upgrade":
             break;
     }
 }

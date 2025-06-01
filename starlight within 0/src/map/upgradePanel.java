@@ -9,8 +9,8 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-public class upgradePanel extends JPanel{
-    public upgradePanel(JFrame frame){
+public class UpgradePanel extends JPanel{
+    public UpgradePanel(JFrame frame){
         // setting the layout of the panel
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         // making the title fo the panel
@@ -62,7 +62,7 @@ public class upgradePanel extends JPanel{
         BackButton.addActionListener(e -> {
             // Logic for going back to the previous panel
             frame.getContentPane().removeAll();
-            frame.getContentPane().add(new upgradePanel(frame));
+            frame.getContentPane().add(new UpgradePanel(frame));
             frame.revalidate();
             frame.repaint();
         });
