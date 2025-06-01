@@ -13,12 +13,16 @@ import javax.swing.*;
 import map.Loby;
 import map.Maps;
 import map.Traning;
+import map.UpgradePanel;
 
 public class GamePanel extends JPanel implements Runnable{
 
 
     // bounde for the game
     ArrayList<Rectangle> bounds = new ArrayList<>(); // List to hold boundaries
+    ArrayList<Hitbox> hitboxes = new ArrayList<>(); // List to hold hitboxes
+
+    UpgradePanel upgradePanel = new UpgradePanel(null);
     
 
     Player player; // calling the player
@@ -38,10 +42,35 @@ public class GamePanel extends JPanel implements Runnable{
     final int OriginalTileSize = 32; // size of spirite
     final int scale = 10; // upscaling size of spirite
     final int tileSize = OriginalTileSize * scale; // the size of spirite in the game
-
     {
-    bounds.add(new Rectangle(0, 500,10000,5));
-    bounds.add(new Rectangle(0, 1850,10000,5));
+    bounds.add(new Rectangle(0, 500, 10000, 5));
+    bounds.add(new Rectangle(0, 1850, 10000, 5));
+    }
+    {
+    hitboxes.add(new Hitbox(500, 900, 100, 100, "shop"));
+    hitboxes.add(new Hitbox(500, 1700, 100, 100, "upgrade"));
+    hitboxes.add(new Hitbox(3000, 900, 100, 100, "idk1"));
+    hitboxes.add(new Hitbox(3000, 1700, 100, 100, "idk2")); // Example hitbox, adjust as needed
+    }
+
+    public void setBoundsForMap(String mapName) {
+    bounds.clear(); // Remove old bounds
+
+        if (mapName.equals("loby")) {
+            bounds.add(new Rectangle(0, 500, 10000, 5));
+            bounds.add(new Rectangle(0, 1850, 10000, 5));
+            // add other Loby bounds here
+        } else if (mapName.equals("traning")) {
+            bounds.add(new Rectangle(0, 600, 10000, 5));
+            bounds.add(new Rectangle(0, 1850, 10000, 5));
+            // add your specific Training bounds here
+        }
+    }
+    public void setHitboxForMap(String maName){
+        hitboxes.clear();
+        if (maName.equals("loby")) {
+        } else if (maName.equals("traning")) {
+        }
     }
 
 
@@ -120,7 +149,6 @@ public class GamePanel extends JPanel implements Runnable{
 
     public GamePanel(JFrame window) throws IOException {
         hideCursor(); // to hide the cursor
-
         GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
         final int screenWidth = gd.getDisplayMode().getWidth();
         final int screenHeight = gd.getDisplayMode().getHeight();
@@ -128,6 +156,11 @@ public class GamePanel extends JPanel implements Runnable{
         screenHeightTemp = screenHeight;
         // calling currentMap
         currentMap = new Loby();
+
+        upgradePanel.setVisible(false); // initially hidden
+        this.setLayout(null); // disable layout manager
+        upgradePanel.setBounds(100, 100, 400, 300); // adjust position on screen
+        this.add(upgradePanel);
 
         // calling music player
         musik = new Music();
@@ -219,6 +252,22 @@ public class GamePanel extends JPanel implements Runnable{
     return false;
     }
 
+    private void onHitboxTrigger(Rectangle hitbox) {
+    // Identify which hitbox and do something
+    System.out.println("Player triggered hitbox at: " + hitbox);
+
+    // Example: show message, spawn monster, change map, etc.
+    }
+    private void onHitboxTrigger(Hitbox hb) {
+    switch (hb.id) {
+        case "shop":
+            System.out.println("Player entered shop");
+            break;
+        case "upgrade":
+            break;
+    }
+}
+
 
     //used for the player to move
     public void update() {
@@ -229,13 +278,44 @@ public class GamePanel extends JPanel implements Runnable{
         playerX = Math.max(0, Math.min(playerX, mapWidth - tileSize)); // Clamp playerX to map bounds so they can't go out of the map
         playerY = Math.max(0, Math.min(playerY, mapHeight - tileSize)); // Clamp playerY to map bounds so they can't go out of the map
 
-        if(Math.max(0, Math.min(playerX, mapWidth - tileSize)) == 0 || Math.max(0, Math.min(playerY, mapHeight - tileSize)) == 0) {
-            mapTeleport(mapName); // teleport to the map if the player is at the edge of the map
+        // Clamp player positions first
+        playerX = Math.max(0, Math.min(playerX, mapWidth - tileSize));
+        playerY = Math.max(0, Math.min(playerY, mapHeight - tileSize));
+
+        // Check if player is at left or right edge for teleport
+        if (mapName.equals("loby") && playerX == 0) {
+            mapName = "traning";
+            mapTeleport(mapName);
+        } else if (mapName.equals("traning") && playerX == mapWidth - tileSize) {
+            mapName = "loby";
+            mapTeleport(mapName);
         }
     
         Duration timeSinceLastRoll = Duration.between(lastRollTime, Instant.now());
     
         Rectangle Rect = new Rectangle(playerX, playerY, tileSize, tileSize);
+
+        Rectangle playerRect = new Rectangle(playerX, playerY, tileSize, tileSize);
+
+        // Defensive version of hitbox collision check
+        for (Hitbox hb : hitboxes) {
+            if (hb == null || hb.rect == null) {
+                // Skip if hitbox or its rectangle is null (avoid crashes)
+                continue;
+            }
+            
+            // Check collision with player rectangle
+            if (playerRect.intersects(hb.rect)) {
+                try {
+                    onHitboxTrigger(hb);  // Call your trigger safely
+                } catch (Exception e) {
+                    // Catch any unexpected error inside trigger so it doesn't freeze the game
+                    System.err.println("Error in onHitboxTrigger: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        }
+
 
         if (keyH.up) {
             Rect.y -= playerSpeed;
@@ -435,6 +515,11 @@ public class GamePanel extends JPanel implements Runnable{
         for (Rectangle rect : bounds) {
             g2.drawRect(rect.x - cameraX, rect.y - cameraY, rect.width, rect.height);
         }
+        g2.setColor(new Color(0, 255, 0, 100)); // semi-transparent green for hitboxes
+
+        for (Hitbox hitbox : hitboxes) {
+            g2.fillRect(hitbox.x - cameraX, hitbox.y - cameraY, hitbox.width, hitbox.height);
+        }
 
         g2.dispose();
 
@@ -514,33 +599,29 @@ public class GamePanel extends JPanel implements Runnable{
         setCursor(Cursor.getDefaultCursor());
     }
 
-    public void mapTeleport(String mapName) {
+    public void mapTeleport(String newMapName) {
+    System.out.println("Player is at the edge of the map, teleporting to the next map.");
 
-        System.out.println("Player is at the edge of the map, teleporting to the next map.");
-        if(mapName.equals("loby") && direction.equals("left")){
-            mapName = "traning";
-        }
-        if(mapName.equals("traning") && direction.equals("right")){
-            mapName = "loby";
-        }
+    mapName = newMapName; // update current mapName
 
-        if (mapName.equals("loby")) {
-            currentMap = new Loby();
-            mapHeight = currentMap.getImage().getHeight();
-            mapWidth = currentMap.getImage().getWidth();
-            playerX = 1800;
-            playerY = 700;
-        } else if (mapName.equals("traning")) {
-            currentMap = new Traning();
-            mapHeight = currentMap.getImage().getHeight();
-            mapWidth = currentMap.getImage().getWidth();
-            playerX = 1800;
-            playerY = 700;
-        }
+    if (mapName.equals("loby")) {
+        currentMap = new Loby();
+        mapHeight = currentMap.getImage().getHeight();
+        mapWidth = currentMap.getImage().getWidth();
+        playerX = 1800;
+        playerY = 700;
+        setBoundsForMap("loby");
+    } else if (mapName.equals("traning")) {
+        currentMap = new Traning();
+        mapHeight = currentMap.getImage().getHeight();
+        mapWidth = currentMap.getImage().getWidth();
+        playerX = 1800;
+        playerY = 700;
+        setBoundsForMap("traning");
     }
+}
 
 public void CheckCollision() {
-    }
-
+}
     
 }
