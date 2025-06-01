@@ -1,11 +1,17 @@
 package entity;
 
+
+import java.awt.image.BufferedImage;
+
 public class Monster extends Entity {
 
-    public Monster(int x, int y, int speed, String namaMoster, int jenisMosnter, 
+    BufferedImage image;
+
+    public Monster(int x, int y, float speed, String namaMoster, int jenisMosnter, 
                    int physicalMosterDamgae, int physicalMonsterArmor, 
                    int magicalMonsterDamage, int magicalMonsterArmor, 
-                   int monsterHp, int monsterDrop) {
+                   int monsterHp, int monsterDrop, BufferedImage image) {
+
         super();
         this.x = x;
         this.y = y;
@@ -18,6 +24,9 @@ public class Monster extends Entity {
         this.magicalMonsterArmor = magicalMonsterArmor;
         this.monsterHp = monsterHp;
         this.monsterDrop = monsterDrop;
+
+        this.image = image;
+
     }
 
     @Override
@@ -69,7 +78,9 @@ public class Monster extends Entity {
     }
 
     @Override
-    public int getSpeed() {
+
+    public float getSpeed() {
+
         // TODO Auto-generated method stub
         return super.getSpeed();
     }
@@ -182,6 +193,25 @@ public class Monster extends Entity {
         return super.toString();
     }
 
-    
+
+    public BufferedImage getImage() {
+        return image;
+    }
+
+    public void setImage(BufferedImage image) {
+        this.image = image;
+    }
+
+    public BufferedImage[] getFrameMonsters() {
+        BufferedImage[] framesMonsters = new BufferedImage[4];
+        int frameWidth = image.getWidth() / 4; // Assuming 4 frames horizontally
+        int frameHeight = image.getHeight(); // Assuming all frames have the same height
+        for (int i = 0; i < 4; i++) {
+            System.out.println(namaMoster);
+            framesMonsters[i] = image.getSubimage(i * frameWidth, 0, frameWidth, frameHeight);
+        }
+        return framesMonsters;
+    }
+
     
 }

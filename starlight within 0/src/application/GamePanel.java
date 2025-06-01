@@ -171,6 +171,7 @@ public class GamePanel extends JPanel implements Runnable{
 
         framesRoll = new BufferedImage[12];
         for (int i = 0; i < 12; i++) {
+            System.out.println("Loading roll frame: " + i);
             framesRoll[i] = rollSheet.getSubimage(i * frameWidth, 0, frameWidth, frameHeight);
         }
         framesAttack = new BufferedImage[4];
@@ -336,6 +337,31 @@ public class GamePanel extends JPanel implements Runnable{
         int playerDrawY = playerY - cameraY;
 
         g2.drawImage(spriteToDraw,playerDrawX,playerDrawY, tileSize, tileSize, null);
+
+        if(currentMap instanceof Loby) {
+            // System.out.println("runing monster spawn");
+            for(int m = 0; m < monsterSpawn.monsterList.size(); m++) {
+                Monster monster = monsterSpawn.monsterList.get(m);
+                BufferedImage[] framesMonsters = monster.getFrameMonsters();
+                if (monster.getImage() != null) {
+                    g2.drawImage(framesMonsters[currentFrame % framesMonsters.length], monster.getX() - cameraX, monster.getY() - cameraY, tileSize / 2, tileSize / 2, this);
+
+                    if(monsterSpawn.monsterList.get(m).getX() > playerX) {
+                        monsterSpawn.monsterList.get(m).setX((int) (monsterSpawn.monsterList.get(m).getX() - monsterSpawn.monsterList.get(m).getSpeed())); // move left
+                    } 
+                    if(monsterSpawn.monsterList.get(m).getY() > playerY) {
+                        monsterSpawn.monsterList.get(m).setY((int) (monsterSpawn.monsterList.get(m).getY() - monsterSpawn.monsterList.get(m).getSpeed())); // move left
+                    }
+                    if(monsterSpawn.monsterList.get(m).getY() < playerY) {
+                        monsterSpawn.monsterList.get(m).setY((int) (monsterSpawn.monsterList.get(m).getY() + monsterSpawn.monsterList.get(m).getSpeed())); // move left
+                    }
+                    if(monsterSpawn.monsterList.get(m).getX() < playerX) {
+                        monsterSpawn.monsterList.get(m).setX((int) (monsterSpawn.monsterList.get(m).getX() + monsterSpawn.monsterList.get(m).getSpeed())); // move left
+                    } 
+                }
+            }
+            // System.out.println("successfully run monster spawn");
+        }
         
         drawHealthAndManaBars(g2);// drawing the health and mana bars
 
