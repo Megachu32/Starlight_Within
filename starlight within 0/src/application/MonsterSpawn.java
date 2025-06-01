@@ -79,5 +79,27 @@ public class MonsterSpawn {
         }
     }
 
+    public void moveMonsters(int n) {
+        Random ran = new Random();
+        int random = ran.nextInt(100) + 1;
+
+        if(random == 1){
+            switch(ran.nextInt(4) + 1){
+                case 1:
+                    monsterList.get(n).setX(monsterList.get(n).getX() + monsterList.get(n).getSpeed() * 2);
+                    break;
+                case 2:
+                    monsterList.get(n).setX(monsterList.get(n).getX() - monsterList.get(n).getSpeed() * 2);
+                    break;
+                case 3:
+                    monsterList.get(n).setY(monsterList.get(n).getY() + monsterList.get(n).getSpeed() * 2);
+                    break;
+                case 4:
+                    monsterList.get(n).setY(monsterList.get(n).getY() - monsterList.get(n).getSpeed() * 2);
+                    break;
+            }
+        }
+    }
+
     
 }

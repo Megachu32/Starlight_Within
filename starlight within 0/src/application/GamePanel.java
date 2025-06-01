@@ -102,6 +102,8 @@ public class GamePanel extends JPanel implements Runnable{
     int monsterMoveDelay = 0; // delay for monster movement
     final int monsterMoveTrashold = 10; // counter for monster movement
 
+    Boolean toggleHitbox = false;
+
     public boolean canRoll() {
         //TODO connect to roll method
         Instant now = Instant.now();
@@ -294,6 +296,9 @@ public class GamePanel extends JPanel implements Runnable{
 
             return; // Skip rest of update() while rolling
         }
+        if(keyH.hitbox) {
+            toggleHitbox = !toggleHitbox; // toggle hitbox visibility
+        }
 
         if (mouseH.attack) { // left click mouse button
             isMoving = false;
@@ -364,14 +369,18 @@ public class GamePanel extends JPanel implements Runnable{
         int playerDrawY = playerY - cameraY;
 
         g2.drawImage(spriteToDraw,playerDrawX,playerDrawY, tileSize, tileSize, null);
+        if(toggleHitbox){
+            g2.drawRect(playerDrawX,playerDrawY, tileSize, tileSize);
+        }
 
         if(currentMap instanceof Loby) {
-            // System.out.println("runing monster spawn");
+            // System.out.println("runing monster spawn");a
             for (int m = 0; m < monsterSpawn.monsterList.size(); m++) {
                 Monster monster = monsterSpawn.monsterList.get(m);
                 BufferedImage[] framesMonsters = monster.getFrame();
 
                 if (monster.getImage() != null) {
+                    monsterSpawn.moveMonsters(m);
                     g2.drawImage(
                         framesMonsters[currentFrame % framesMonsters.length],
                         monster.getX() - cameraX,
@@ -387,7 +396,7 @@ public class GamePanel extends JPanel implements Runnable{
                     double distance = Math.sqrt(dx * dx + dy * dy);
 
                     // --- Start chasing if close enough ---
-                    if (distance < 120) {
+                    if (distance < 200) {
 
                         monsterMoveDelay++;
                         if (monsterMoveDelay >= monsterMoveTrashold) {
@@ -402,14 +411,20 @@ public class GamePanel extends JPanel implements Runnable{
 
                             if (monster.getY() < playerY) {
                                 monster.setY((int) (monster.getY() + monster.getSpeed()));
-                                System.out.println("Monster: " + monster.getY() + " Player: " + playerY);
                             } else if (monster.getY() > playerY) {
                                 monster.setY((int) (monster.getY() - monster.getSpeed()));
                             }
+
+                            System.out.println("Monster " + monster.getNamaMoster() + " is chasing the player.");
+                            System.out.println("Monster position: (" + monster.getX() + ", " + monster.getY() + ")");
                         } else {
                             continue; // skip this iteration if not time to move
                         }
                     }
+                }
+                if(toggleHitbox){ // toggle visible hitbox
+                    g2.setColor(Color.GREEN);
+                    g2.drawRect(monster.getX() - cameraX, monster.getY() - cameraY, tileSize / 3, tileSize / 3);
                 }
             }
         }
