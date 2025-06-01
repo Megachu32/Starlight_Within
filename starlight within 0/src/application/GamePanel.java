@@ -205,6 +205,15 @@ public class GamePanel extends JPanel implements Runnable{
             repaint();
         }
     }
+    public boolean collidesWithBounds(Rectangle Rect) {
+    for (Rectangle bound : bounds) {
+        if (Rect.intersects(bound)) {
+            return true;
+        }
+    }
+    return false;
+    }
+
 
     //used for the player to move
     public void update() {
@@ -221,23 +230,39 @@ public class GamePanel extends JPanel implements Runnable{
     
         Duration timeSinceLastRoll = Duration.between(lastRollTime, Instant.now());
     
+        Rectangle Rect = new Rectangle(playerX, playerY, tileSize, tileSize);
+
+        if (keyH.up) {
+            Rect.y -= playerSpeed;
+            if (!collidesWithBounds(Rect)) {
+                playerY -= playerSpeed;
+                direction = "up";
+                isMoving = true;
+            }
+        }
+        if (keyH.down) {
+            Rect.y += playerSpeed;
+            if (!collidesWithBounds(Rect)) {
+                playerY += playerSpeed;
+                direction = "down";
+                isMoving = true;
+            }
+        }
         if (keyH.left) {
-            playerX -= playerSpeed;
-            direction = "left";
-            isMoving = true;
+            Rect.x -= playerSpeed;
+            if (!collidesWithBounds(Rect)) {
+                playerX -= playerSpeed;
+                direction = "left";
+                isMoving = true;
+            }
         }
         if (keyH.right) {
+            Rect.x += playerSpeed;
+            if (!collidesWithBounds(Rect)) {
                 playerX += playerSpeed;
                 direction = "right";
                 isMoving = true;
-        }
-        if (keyH.up) {
-                playerY -= playerSpeed;
-                isMoving = true;
-        }
-        if (keyH.down) {
-                playerY += playerSpeed;
-                isMoving = true;
+            }
         }
         if (keyH.space) {
             boolean canRoll = canRoll();
@@ -338,6 +363,11 @@ public class GamePanel extends JPanel implements Runnable{
         g2.drawImage(spriteToDraw,playerDrawX,playerDrawY, tileSize, tileSize, null);
         
         drawHealthAndManaBars(g2);// drawing the health and mana bars
+
+        g2.setColor(Color.RED);
+        for (Rectangle rect : bounds) {
+            g2.drawRect(rect.x - cameraX, rect.y - cameraY, rect.width, rect.height);
+        }
 
         g2.dispose();
 
