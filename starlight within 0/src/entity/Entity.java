@@ -1,6 +1,6 @@
 package entity;
 
-public class Entity {
+public abstract class Entity {
     protected int x, y; // Entity Cordinates 
     protected float speed;// Entity's speed
     protected String namaMoster; 

@@ -1,5 +1,6 @@
 package entity;
 
+
 import java.awt.image.BufferedImage;
 
 public class Monster extends Entity {
@@ -10,6 +11,7 @@ public class Monster extends Entity {
                    int physicalMosterDamgae, int physicalMonsterArmor, 
                    int magicalMonsterDamage, int magicalMonsterArmor, 
                    int monsterHp, int monsterDrop, BufferedImage image) {
+
         super();
         this.x = x;
         this.y = y;
@@ -22,7 +24,9 @@ public class Monster extends Entity {
         this.magicalMonsterArmor = magicalMonsterArmor;
         this.monsterHp = monsterHp;
         this.monsterDrop = monsterDrop;
+
         this.image = image;
+
     }
 
     @Override
@@ -74,7 +78,9 @@ public class Monster extends Entity {
     }
 
     @Override
+
     public float getSpeed() {
+
         // TODO Auto-generated method stub
         return super.getSpeed();
     }
@@ -187,6 +193,7 @@ public class Monster extends Entity {
         return super.toString();
     }
 
+
     public BufferedImage getImage() {
         return image;
     }
@@ -205,5 +212,6 @@ public class Monster extends Entity {
         }
         return framesMonsters;
     }
+
     
 }

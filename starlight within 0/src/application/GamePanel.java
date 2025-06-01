@@ -1,34 +1,49 @@
 package application;
 
+import entity.Monster;
 import entity.Player;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import javax.imageio.ImageIO;
 import javax.swing.*;
-
-import org.w3c.dom.events.MouseEvent;
-
 import map.Loby;
+import map.Maps;
+import map.Traning;
 
 public class GamePanel extends JPanel implements Runnable{
 
+
+    // bounde for the game
+    ArrayList<Rectangle> bounds = new ArrayList<>(); // List to hold boundaries
+    
+
     Player player; // calling the player
 
-    // calling loby
-    Loby loby;
+    Music musik;
+
+    /*map variuables*/
+    // calling mapps
+    Maps currentMap;
 
     //map size
     int mapHeight;
     int mapWidth;
 
+    String mapName = "loby"; // current map name
+
     final int OriginalTileSize = 32; // size of spirite
     final int scale = 10; // upscaling size of spirite
     final int tileSize = OriginalTileSize * scale; // the size of spirite in the game
+
+    {
+    bounds.add(new Rectangle(0, 500,10000,5));
+    bounds.add(new Rectangle(0, 1850,10000,5));
+    }
+
 
     final int fps = 60;// fps for the game
 
@@ -110,9 +125,13 @@ public class GamePanel extends JPanel implements Runnable{
         // calling currentMap
         currentMap = new Loby();
 
+        // calling music player
+        musik = new Music();
+        // load music
+        musik.playMusic("/musik/lobyMusic.wav");
         // getingy the map size
-        mapHeight = loby.image.getHeight();
-        mapWidth = loby.image.getWidth();
+        mapHeight = currentMap.getImage().getHeight();
+        mapWidth = currentMap.getImage().getWidth();
 
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
         this.setDoubleBuffered(true);
@@ -130,8 +149,9 @@ public class GamePanel extends JPanel implements Runnable{
         BufferedImage runSheet = ImageIO.read(getClass().getResource("/resource/Colour1/NoOutline/120x80_PNGSheets/_Run.png"));
         BufferedImage rollSheet = ImageIO.read(getClass().getResource("/resource/Colour1/NoOutline/120x80_PNGSheets/_Roll.png"));
         BufferedImage attackSheet = ImageIO.read(getClass().getResource("/resource/Colour1/NoOutline/120x80_PNGSheets/_Attack.png"));
+        punchingBag = ImageIO.read(getClass().getResource("/Samll things/Untitled24_20250525142430.png"));
 
-        if (idleSheet == null || runSheet == null || rollSheet == null || attackSheet == null) {
+        if (idleSheet == null || runSheet == null || rollSheet == null || attackSheet == null || punchingBag == null) {
             System.out.println("Error loading images");
             return;
         }
@@ -193,10 +213,12 @@ public class GamePanel extends JPanel implements Runnable{
         isRolling = false;
         isAttacking = mouseH.attack;
 
-        playerX = Math.max(0, Math.min(playerX, mapWidth - tileSize));
-        playerY = Math.max(0, Math.min(playerY, mapHeight - tileSize));
+        playerX = Math.max(0, Math.min(playerX, mapWidth - tileSize)); // Clamp playerX to map bounds so they can't go out of the map
+        playerY = Math.max(0, Math.min(playerY, mapHeight - tileSize)); // Clamp playerY to map bounds so they can't go out of the map
 
-        
+        if(Math.max(0, Math.min(playerX, mapWidth - tileSize)) == 0 || Math.max(0, Math.min(playerY, mapHeight - tileSize)) == 0) {
+            mapTeleport(mapName); // teleport to the map if the player is at the edge of the map
+        }
     
         Duration timeSinceLastRoll = Duration.between(lastRollTime, Instant.now());
     
@@ -268,11 +290,23 @@ public class GamePanel extends JPanel implements Runnable{
         int cameraX = playerX - screenWidthTemp / 2 + tileSize / 2;
         int cameraY = playerY - screenHeightTemp / 2 + tileSize / 2;
 
+        // coordinates for the punching bag
+        bagX = mapWidth / 2 - punchingBag.getWidth() / 2;
+        bagY = mapHeight / 2 - punchingBag.getHeight() / 2;
+
+        // Center the punching bag on the screen
+        int centerX = screenWidthTemp / 2 - punchingBag.getWidth() / 2;
+        int centerY = screenHeightTemp / 2 - punchingBag.getHeight() / 2;
+
+        // Adjust the punching bag position based on camera so it stays in the center
+        int drawBagX = bagX - cameraX;
+        int drawBagY = bagY - cameraY;
+
         // Clamp camera to map bounds
         cameraX = Math.max(0, Math.min(cameraX, mapWidth - screenWidthTemp));
         cameraY = Math.max(0, Math.min(cameraY, mapHeight - screenHeightTemp));
         // drawing the map
-        g2.drawImage(loby.image, 0, 0, screenWidthTemp, screenHeightTemp, cameraX, cameraY, cameraX + screenWidthTemp, cameraY + screenHeightTemp, this);
+        g2.drawImage(currentMap.getImage(), 0, 0, screenWidthTemp, screenHeightTemp, cameraX, cameraY, cameraX + screenWidthTemp, cameraY + screenHeightTemp, this);
         // drwing the actual player
         BufferedImage spriteToDraw = null;
 
@@ -407,6 +441,34 @@ public class GamePanel extends JPanel implements Runnable{
 
     public void showCursor() {
         setCursor(Cursor.getDefaultCursor());
+    }
+
+    public void mapTeleport(String mapName) {
+
+        System.out.println("Player is at the edge of the map, teleporting to the next map.");
+        if(mapName.equals("loby") && direction.equals("left")){
+            mapName = "traning";
+        }
+        if(mapName.equals("traning") && direction.equals("right")){
+            mapName = "loby";
+        }
+
+        if (mapName.equals("loby")) {
+            currentMap = new Loby();
+            mapHeight = currentMap.getImage().getHeight();
+            mapWidth = currentMap.getImage().getWidth();
+            playerX = 1800;
+            playerY = 700;
+        } else if (mapName.equals("traning")) {
+            currentMap = new Traning();
+            mapHeight = currentMap.getImage().getHeight();
+            mapWidth = currentMap.getImage().getWidth();
+            playerX = 1800;
+            playerY = 700;
+        }
+    }
+
+public void CheckCollision() {
     }
 
     

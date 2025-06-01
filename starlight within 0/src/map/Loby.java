@@ -5,7 +5,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 
-public class Loby {
+public class Loby extends Maps{
     // use better naming
     public BufferedImage image;
     // fuck you
@@ -21,5 +21,11 @@ public class Loby {
         if (image != null) {
             g2.drawImage(image, x, y, screenWidth, screenHeight, null);
         }
+    }
+
+    @Override
+    public BufferedImage getImage() {
+        // TODO Auto-generated method stub
+        return image;
     }
 }
