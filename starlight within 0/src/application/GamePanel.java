@@ -98,7 +98,9 @@ public class GamePanel extends JPanel implements Runnable{
     int bagX, bagY; // position of punching bag
 
     //monsters variable
-    ArrayList<Monster> monsters = new ArrayList<>(); // List to hold monsters
+    MonsterSpawn monsterSpawn; // calling the monster spawn
+    int monsterMoveDelay = 0; // delay for monster movement
+    final int monsterMoveTrashold = 10; // counter for monster movement
 
     public boolean canRoll() {
         //TODO connect to roll method
@@ -150,6 +152,7 @@ public class GamePanel extends JPanel implements Runnable{
         BufferedImage rollSheet = ImageIO.read(getClass().getResource("/resource/Colour1/NoOutline/120x80_PNGSheets/_Roll.png"));
         BufferedImage attackSheet = ImageIO.read(getClass().getResource("/resource/Colour1/NoOutline/120x80_PNGSheets/_Attack.png"));
         punchingBag = ImageIO.read(getClass().getResource("/Samll things/Untitled24_20250525142430.png"));
+        monsterSpawn = new MonsterSpawn(); // initialize monster spawn
 
         if (idleSheet == null || runSheet == null || rollSheet == null || attackSheet == null || punchingBag == null) {
             System.out.println("Error loading images");
@@ -361,6 +364,55 @@ public class GamePanel extends JPanel implements Runnable{
         int playerDrawY = playerY - cameraY;
 
         g2.drawImage(spriteToDraw,playerDrawX,playerDrawY, tileSize, tileSize, null);
+
+        if(currentMap instanceof Loby) {
+            // System.out.println("runing monster spawn");
+            for (int m = 0; m < monsterSpawn.monsterList.size(); m++) {
+                Monster monster = monsterSpawn.monsterList.get(m);
+                BufferedImage[] framesMonsters = monster.getFrame();
+
+                if (monster.getImage() != null) {
+                    g2.drawImage(
+                        framesMonsters[currentFrame % framesMonsters.length],
+                        monster.getX() - cameraX,
+                        monster.getY() - cameraY,
+                        tileSize / 3,
+                        tileSize / 3,
+                        null
+                    );
+
+                    // --- Calculate distance ---
+                    int dx = playerX - monster.getX();
+                    int dy = playerY - monster.getY();
+                    double distance = Math.sqrt(dx * dx + dy * dy);
+
+                    // --- Start chasing if close enough ---
+                    if (distance < 120) {
+
+                        monsterMoveDelay++;
+                        if (monsterMoveDelay >= monsterMoveTrashold) {
+                            monsterMoveDelay = 0; // reset the delay counter
+                                
+                            // Update monster position towards player
+                            if (monster.getX() < playerX) {
+                                monster.setX((int) (monster.getX() + monster.getSpeed()));
+                            } else if (monster.getX() > playerX) {
+                                monster.setX((int) (monster.getX() - monster.getSpeed()));
+                            }
+
+                            if (monster.getY() < playerY) {
+                                monster.setY((int) (monster.getY() + monster.getSpeed()));
+                                System.out.println("Monster: " + monster.getY() + " Player: " + playerY);
+                            } else if (monster.getY() > playerY) {
+                                monster.setY((int) (monster.getY() - monster.getSpeed()));
+                            }
+                        } else {
+                            continue; // skip this iteration if not time to move
+                        }
+                    }
+                }
+            }
+        }
         
         drawHealthAndManaBars(g2);// drawing the health and mana bars
 
