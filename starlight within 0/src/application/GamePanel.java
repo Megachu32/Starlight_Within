@@ -22,7 +22,7 @@ public class GamePanel extends JPanel implements Runnable{
     ArrayList<Rectangle> bounds = new ArrayList<>(); // List to hold boundaries
     ArrayList<Hitbox> hitboxes = new ArrayList<>(); // List to hold hitboxes
 
-    UpgradePanel upgradePanel = new UpgradePanel(null);
+    UpgradePanel upgradePanel;
     
 
     Player player; // calling the player
@@ -49,7 +49,7 @@ public class GamePanel extends JPanel implements Runnable{
     {
     hitboxes.add(new Hitbox(500, 900, 100, 100, "shop"));
     hitboxes.add(new Hitbox(500, 1700, 100, 100, "upgrade"));
-    hitboxes.add(new Hitbox(3000, 900, 100, 100, "idk1"));
+    hitboxes.add(new Hitbox(3000, 900, 100, 100, "startGame"));
     hitboxes.add(new Hitbox(3000, 1700, 100, 100, "idk2")); // Example hitbox, adjust as needed
     }
 
@@ -110,6 +110,10 @@ public class GamePanel extends JPanel implements Runnable{
     final int playerSpeed = 7;
     int playerX = 1800;
     int playerY = 700;
+    int playerXHitbox = 0; // player hitbox x position
+    int playerYHitbox = 0; // player hitbox y position
+    int playerWidthForHitbox = 0; // player width
+    int playerHeightForHitbox = 0; // player height
 
     // screen size
     int screenWidthTemp;
@@ -125,6 +129,7 @@ public class GamePanel extends JPanel implements Runnable{
     //other variables
     BufferedImage punchingBag;
     int bagX, bagY; // position of punching bag
+    JLayeredPane layeredPane;
 
     //monsters variable
     MonsterSpawn monsterSpawn; // calling the monster spawn
@@ -132,6 +137,8 @@ public class GamePanel extends JPanel implements Runnable{
     final int monsterMoveTrashold = 10; // counter for monster movement
 
     Boolean toggleHitbox = false;
+
+    JFrame frame;
 
     public boolean canRoll() {
         //TODO connect to roll method
@@ -156,12 +163,19 @@ public class GamePanel extends JPanel implements Runnable{
         screenHeightTemp = screenHeight;
         // calling currentMap
         currentMap = new Loby();
+        upgradePanel = new UpgradePanel(window); // initialize upgrade panel
 
-        upgradePanel.setVisible(false); // initially hidden
-        this.setLayout(null); // disable layout manager
-        upgradePanel.setBounds(100, 100, 400, 300); // adjust position on screen
-        this.add(upgradePanel);
+        layeredPane = window.getLayeredPane();
+        upgradePanel.setBounds(0, 0, screenWidth, screenHeight);
+        upgradePanel.setOpaque(true); // make sure it's not transparent
+        layeredPane.add(upgradePanel, JLayeredPane.PALETTE_LAYER); // or POPUP_LAYER
+        upgradePanel.setVisible(true);
+        // window.add(layeredPane); // add upgrade panel to the window
+        // upgradePanel.repaint();
 
+        // window.remove(upgradePanel); // remove upgrade panel from the window
+
+        // sleep(1000);
         // calling music player
         musik = new Music();
         // load music
@@ -175,10 +189,13 @@ public class GamePanel extends JPanel implements Runnable{
         this.addKeyListener(keyH);
         this.addMouseListener(mouseH);
         this.setFocusable(true);
+        this.add(upgradePanel);
 
         player = new Player(this, keyH, mouseH);
 
+        frame = window; // store the JFrame reference
         loadSprites();
+        // getFrame(window);
     }
 
     private void loadSprites() throws IOException {
@@ -193,7 +210,7 @@ public class GamePanel extends JPanel implements Runnable{
             System.out.println("Error loading images");
             return;
         }
-
+ 
         frameWidth = idleSheet.getWidth() / 10;
         frameHeight = idleSheet.getHeight();
 
@@ -252,22 +269,20 @@ public class GamePanel extends JPanel implements Runnable{
     return false;
     }
 
-    private void onHitboxTrigger(Rectangle hitbox) {
-    // Identify which hitbox and do something
-    System.out.println("Player triggered hitbox at: " + hitbox);
-
-    // Example: show message, spawn monster, change map, etc.
-    }
     private void onHitboxTrigger(Hitbox hb) {
-    switch (hb.id) {
-        case "shop":
-            System.out.println("Player entered shop");
-            break;
-        case "upgrade":
-            break;
+        switch (hb.id) {
+            case "shop":
+                System.out.println("Player entered shop");
+                this.add(layeredPane); // Show upgrade panel\
+                // sleep(1);
+                break;
+            case "upgrade":
+                System.out.println("Player entered upgrade area");
+                frame.add(upgradePanel); // Show upgrade panel\
+                sleep(1);
+                break;
+        }
     }
-}
-
 
     //used for the player to move
     public void update() {
@@ -299,8 +314,13 @@ public class GamePanel extends JPanel implements Runnable{
 
         // Defensive version of hitbox collision check
         for (Hitbox hb : hitboxes) {
-            if (hb == null || hb.rect == null) {
+            if (hb == null) {
                 // Skip if hitbox or its rectangle is null (avoid crashes)
+                System.out.println("Hitbox is null, skipping collision check.");
+                continue;
+            }
+            if(hb.rect == null){
+                // System.out.println("Hitbox rectangle is null, skipping collision check.");
                 continue;
             }
             
@@ -316,6 +336,7 @@ public class GamePanel extends JPanel implements Runnable{
             }
         }
 
+        // System.out.println(playerX + " " + playerY);
 
         if (keyH.up) {
             Rect.y -= playerSpeed;
@@ -426,6 +447,10 @@ public class GamePanel extends JPanel implements Runnable{
         if(currentMap instanceof Traning) {
             if (punchingBag != null) {
                 g2.drawImage(punchingBag, drawBagX, drawBagY, 250, 250, this);
+                if(toggleHitbox) {
+                    g2.setColor(Color.RED);
+                    g2.drawRect(drawBagX, drawBagY, punchingBag.getWidth(), punchingBag.getHeight());
+                }
             }
         }
 
@@ -447,10 +472,17 @@ public class GamePanel extends JPanel implements Runnable{
         // drawing the player
         int playerDrawX = playerX - cameraX;
         int playerDrawY = playerY - cameraY;
+        playerXHitbox = playerDrawX; // update player hitbox x position
+        playerYHitbox = playerDrawY + 120; // update player hitbox y position
+        playerWidthForHitbox = tileSize; // update player width
+        playerHeightForHitbox = tileSize - 100; // update player height
 
         g2.drawImage(spriteToDraw,playerDrawX,playerDrawY, tileSize, tileSize, null);
         if(toggleHitbox){
-            g2.drawRect(playerDrawX,playerDrawY, tileSize, tileSize);
+            // playerDrawY = (playerY + 150) - cameraY;
+            g2.setColor(Color.BLUE);
+            g2.fillRect(playerX, playerY, tileSize, tileSize); // draw player hitbox outline
+            // g2.fillRecdt(playerXHitbox, playerYHitbox, playerWidthForHitbox, playerHeightForHitbox); // draw player hitbox
         }
 
         if(currentMap instanceof Loby) {
@@ -489,14 +521,14 @@ public class GamePanel extends JPanel implements Runnable{
                                 monster.setX((int) (monster.getX() - monster.getSpeed()));
                             }
 
-                            if (monster.getY() < playerY) {
+                            if (monster.getY() < playerY + 120) {
                                 monster.setY((int) (monster.getY() + monster.getSpeed()));
-                            } else if (monster.getY() > playerY) {
+                            } else if (monster.getY() > playerY + 120) {
                                 monster.setY((int) (monster.getY() - monster.getSpeed()));
                             }
 
-                            System.out.println("Monster " + monster.getNamaMoster() + " is chasing the player.");
-                            System.out.println("Monster position: (" + monster.getX() + ", " + monster.getY() + ")");
+                            // System.out.println("Monster " + monster.getNamaMoster() + " is chasing the player.");
+                            // System.out.println("Monster position: (" + monster.getX() + ", " + monster.getY() + ")");
                         } else {
                             continue; // skip this iteration if not time to move
                         }
@@ -599,29 +631,35 @@ public class GamePanel extends JPanel implements Runnable{
         setCursor(Cursor.getDefaultCursor());
     }
 
+    //teleporting the player to the next map
     public void mapTeleport(String newMapName) {
-    System.out.println("Player is at the edge of the map, teleporting to the next map.");
+        System.out.println("Player is at the edge of the map, teleporting to the next map.");
 
-    mapName = newMapName; // update current mapName
+        mapName = newMapName; // update current mapName
 
-    if (mapName.equals("loby")) {
-        currentMap = new Loby();
-        mapHeight = currentMap.getImage().getHeight();
-        mapWidth = currentMap.getImage().getWidth();
-        playerX = 1800;
-        playerY = 700;
-        setBoundsForMap("loby");
-    } else if (mapName.equals("traning")) {
-        currentMap = new Traning();
-        mapHeight = currentMap.getImage().getHeight();
-        mapWidth = currentMap.getImage().getWidth();
-        playerX = 1800;
-        playerY = 700;
-        setBoundsForMap("traning");
+        if (mapName.equals("loby")) {
+            currentMap = new Loby();
+            mapHeight = currentMap.getImage().getHeight();
+            mapWidth = currentMap.getImage().getWidth();
+            playerX = 1800;
+            playerY = 700;
+            setBoundsForMap("loby");
+        } else if (mapName.equals("traning")) {
+            currentMap = new Traning();
+            mapHeight = currentMap.getImage().getHeight();
+            mapWidth = currentMap.getImage().getWidth();
+            playerX = 1800;
+            playerY = 700;
+            setBoundsForMap("traning");
+        }
+        
     }
-}
 
-public void CheckCollision() {
-}
-    
+    public void CheckCollision() {
+    }
+
+    private void sleep(int i) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'sleep'");
+    }
 }

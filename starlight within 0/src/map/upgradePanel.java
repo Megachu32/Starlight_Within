@@ -1,6 +1,7 @@
 package map;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Font;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -13,6 +14,7 @@ public class UpgradePanel extends JPanel{
     public UpgradePanel(JFrame frame){
         // setting the layout of the panel
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        // setLayout(null);
         // making the title fo the panel
         JLabel panelName = new JLabel("upgrade panel");
         panelName.setFont(new Font("Arial", Font.BOLD, 24));
@@ -61,10 +63,13 @@ public class UpgradePanel extends JPanel{
         });
         BackButton.addActionListener(e -> {
             // Logic for going back to the previous panel
-            frame.getContentPane().removeAll();
-            frame.getContentPane().add(new UpgradePanel(frame));
-            frame.revalidate();
-            frame.repaint();
+            // remove this panel from its parent
+            Container parent = this.getParent();
+            if (parent != null) {
+                parent.remove(this); // removes itself
+                parent.revalidate(); // update layout
+                parent.repaint();    // redraw
+            }
         });
         
 

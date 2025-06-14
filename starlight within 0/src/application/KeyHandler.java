@@ -37,6 +37,9 @@
             else if(code == KeyEvent.VK_Q){
                 block = true;
             }
+            else if(code == KeyEvent.VK_ESCAPE){
+                System.exit(0);
+            }
         }
 
         // for when the key is released
