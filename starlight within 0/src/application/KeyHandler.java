@@ -4,7 +4,7 @@
 
     public class KeyHandler implements KeyListener {
 
-        public static boolean up, down, left, right, space, block, hitbox;
+        public static boolean up, down, left, right, space, block, hitbox, EscButton;
 
         // for when a key is typed
         @Override
@@ -38,7 +38,7 @@
                 block = true;
             }
             else if(code == KeyEvent.VK_ESCAPE){
-                System.exit(0);
+                EscButton = true;
             }
         }
 
@@ -61,6 +61,9 @@
             }
             else if(code == KeyEvent.VK_Q){
                 block = false;
+            }
+            else if(code == KeyEvent.VK_ESCAPE){
+                EscButton = false;
             }
         
         }

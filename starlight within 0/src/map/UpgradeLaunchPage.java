@@ -1,12 +1,17 @@
 package map;
 
 import javax.swing.*;
+
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.event.*;
 
 public class UpgradeLaunchPage {
 
     private static JFrame frame = null;
     private static boolean cooldown = false;
+    static int startY = 100;
+    static int gap = 60;
 
     public static void showPanel() {
     if ((frame == null || !frame.isDisplayable()) && !cooldown) { // check if the frame is noll or displayble or in cooldown
@@ -16,6 +21,8 @@ public class UpgradeLaunchPage {
         frame = new JFrame("Upgrade Window");// frame title
         frame.setSize(400, 400);// frame size
         frame.setLayout(null);// frame layour wich is null wich means we can set bounds for each component
+        frame.setLocationRelativeTo(null);
+        frame.getContentPane().setBackground(new Color(30, 30, 30)); // Set a background color for better visibility
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);// close operation to dispose the frame when closed
 
         frame.addWindowListener(new WindowAdapter() { // Add a window listener to handle the close event
@@ -27,13 +34,42 @@ public class UpgradeLaunchPage {
         });
 
         JButton upgradeButtonspeed = new JButton("Speed");
-        upgradeButtonspeed.setBounds(100, 100, 200, 50); // set bounds for the button (x, y, width, height)
+        JButton upgradeButtonHp = new JButton("hp");
+        JButton upgradeButtonMana = new JButton("mana");
+        upgradeButtonspeed.setBounds(100, startY, 200, 50); // set bounds for the button (x, y, width, height)
+        upgradeButtonHp.setBounds(100, startY + gap, 200, 50); // set bounds for the button (x, y, width, height)
+        upgradeButtonMana.setBounds(100, startY + (gap * 2), 200, 50); // set bounds for the button (x, y, width, height)
         upgradeButtonspeed.setFocusable(false);// set focusable to false to prevent focus issues wich is where the button is not clickable
+        upgradeButtonHp.setFocusable(false);// set focusable to false to prevent focus issues wich is where the button is not clickable
+        upgradeButtonMana.setFocusable(false);// set focusable to false to prevent focus issues wich is where the button is not clickable
+        
+        Font buttonFont = new Font("Arial", Font.BOLD, 16);
+
+        upgradeButtonspeed.setBackground(new Color(70, 130, 180)); // steel blue
+        upgradeButtonspeed.setForeground(Color.WHITE);
+        upgradeButtonspeed.setFont(buttonFont);
+
+        upgradeButtonHp.setBackground(new Color(46, 139, 87)); // sea green
+        upgradeButtonHp.setForeground(Color.WHITE);
+        upgradeButtonHp.setFont(buttonFont);
+
+        upgradeButtonMana.setBackground(new Color(138, 43, 226)); // purple
+        upgradeButtonMana.setForeground(Color.WHITE);
+        upgradeButtonMana.setFont(buttonFont);
+
         upgradeButtonspeed.addActionListener(e -> {
             System.out.println("Speed upgraded!");
         });
+        upgradeButtonHp.addActionListener(e -> {
+            System.out.println("hp upgraded!");
+        });
+        upgradeButtonMana.addActionListener(e -> {
+            System.out.println("mana upgraded!");
+        });
 
         frame.add(upgradeButtonspeed);
+        frame.add(upgradeButtonHp);
+        frame.add(upgradeButtonMana);
         frame.setVisible(true);
     }
 }

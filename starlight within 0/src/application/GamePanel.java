@@ -10,8 +10,11 @@ import java.time.Instant;
 import java.util.ArrayList;
 import javax.imageio.ImageIO;
 import javax.swing.*;
+
+import map.EscMenuLaunchPage;
 import map.Loby;
 import map.Maps;
+import map.ShopLaunchPage;
 import map.Traning;
 import map.UpgradeLaunchPage;
 import map.UpgradePanel;
@@ -23,6 +26,8 @@ public class GamePanel extends JPanel implements Runnable{
     ArrayList<Rectangle> bounds = new ArrayList<>(); // List to hold boundaries
     ArrayList<Hitbox> hitboxes = new ArrayList<>(); // List to hold hitboxes
     UpgradeLaunchPage upgradeLaunchPage = new UpgradeLaunchPage();
+    ShopLaunchPage shopLaunchPage = new ShopLaunchPage();
+    EscMenuLaunchPage escMenuLaunchPage = new EscMenuLaunchPage();
 
     UpgradePanel upgradePanel;
     
@@ -275,7 +280,7 @@ public class GamePanel extends JPanel implements Runnable{
         switch (hb.id) {
             case "shop":
                 System.out.println("Player entered shop");
-                this.add(layeredPane); // Show upgrade panel\
+                ShopLaunchPage.showPanel(); // Show shop panel
                 // sleep(1);
                 break;
             case "upgrade":
@@ -414,6 +419,10 @@ public class GamePanel extends JPanel implements Runnable{
                 mouseH.attack = false;
                 attackCounter = 0;
             }
+        }
+        if(keyH.EscButton){
+            escMenuLaunchPage.showPanel(); // Show the Esc menu
+            keyH.EscButton = false; // Reset the Esc button state
         }
     }
 
