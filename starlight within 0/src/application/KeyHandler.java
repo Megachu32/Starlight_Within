@@ -4,7 +4,7 @@
 
     public class KeyHandler implements KeyListener {
 
-        public static boolean up, down, left, right, space, block;
+        public static boolean up, down, left, right, space, block, hitbox;
 
         // for when a key is typed
         @Override
@@ -32,10 +32,13 @@
                 space = true;
             }
             else if(code == KeyEvent.VK_E){
-                
+                hitbox = true;
             }
             else if(code == KeyEvent.VK_Q){
                 block = true;
+            }
+            else if(code == KeyEvent.VK_ESCAPE){
+                System.exit(0);
             }
         }
 
@@ -54,7 +57,7 @@
                 right = false;
             }
             else if(code == KeyEvent.VK_E){
-                
+                hitbox = false;
             }
             else if(code == KeyEvent.VK_Q){
                 block = false;

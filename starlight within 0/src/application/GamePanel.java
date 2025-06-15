@@ -13,6 +13,7 @@ import javax.swing.*;
 import map.Loby;
 import map.Maps;
 import map.Traning;
+import map.UpgradeLaunchPage;
 import map.UpgradePanel;
 
 public class GamePanel extends JPanel implements Runnable{
@@ -21,10 +22,11 @@ public class GamePanel extends JPanel implements Runnable{
     // bounde for the game
     ArrayList<Rectangle> bounds = new ArrayList<>(); // List to hold boundaries
     ArrayList<Hitbox> hitboxes = new ArrayList<>(); // List to hold hitboxes
+    UpgradeLaunchPage upgradeLaunchPage = new UpgradeLaunchPage();
 
-    UpgradePanel upgradePanel = new UpgradePanel(null);
 
-    boolean visible = false; // for the upgrade panel visibility
+    UpgradePanel upgradePanel;
+
     
 
     Player player; // calling the player
@@ -51,7 +53,7 @@ public class GamePanel extends JPanel implements Runnable{
     {
     hitboxes.add(new Hitbox(500, 900, 100, 100, "shop"));
     hitboxes.add(new Hitbox(500, 1700, 100, 100, "upgrade"));
-    hitboxes.add(new Hitbox(3000, 900, 100, 100, "idk1"));
+    hitboxes.add(new Hitbox(3000, 900, 100, 100, "startGame"));
     hitboxes.add(new Hitbox(3000, 1700, 100, 100, "idk2")); // Example hitbox, adjust as needed
     }
     public void setHitboxForMap(String mapName) {
@@ -120,6 +122,10 @@ public class GamePanel extends JPanel implements Runnable{
     final int playerSpeed = 7;
     int playerX = 1800;
     int playerY = 700;
+    int playerXHitbox = 0; // player hitbox x position
+    int playerYHitbox = 0; // player hitbox y position
+    int playerWidthForHitbox = 0; // player width
+    int playerHeightForHitbox = 0; // player height
 
     // screen size
     int screenWidthTemp;
@@ -135,9 +141,16 @@ public class GamePanel extends JPanel implements Runnable{
     //other variables
     BufferedImage punchingBag;
     int bagX, bagY; // position of punching bag
+    JLayeredPane layeredPane;
 
     //monsters variable
-    ArrayList<Monster> monsters = new ArrayList<>(); // List to hold monsters
+    MonsterSpawn monsterSpawn; // calling the monster spawn
+    int monsterMoveDelay = 0; // delay for monster movement
+    final int monsterMoveTrashold = 10; // counter for monster movement
+
+    Boolean toggleHitbox = false;
+
+    JFrame frame;
 
     public boolean canRoll() {
         //TODO connect to roll method
@@ -162,17 +175,21 @@ public class GamePanel extends JPanel implements Runnable{
         screenHeightTemp = screenHeight;
         // calling currentMap
         currentMap = new Loby();
-
-        JFrame frame = window; // Initialize the frame variable
-        JLayeredPane layeredPane = frame.getLayeredPane();
-        UpgradePanel upgradePanel = new UpgradePanel(frame);
-        upgradePanel.setBounds(0,0, 400, 500); // full size
-        layeredPane.add(upgradePanel, JLayeredPane.POPUP_LAYER);
-        upgradePanel.setVisible(visible); // Initially hide the upgrade panel
+        upgradePanel = new UpgradePanel(window); // initialize upgrade panel
 
 
+        layeredPane = window.getLayeredPane();
+        upgradePanel.setBounds(0, 0, screenWidth, screenHeight);
+        upgradePanel.setOpaque(true); // make sure it's not transparent
+        layeredPane.add(upgradePanel, JLayeredPane.PALETTE_LAYER); // or POPUP_LAYER
+        upgradePanel.setVisible(true);
+        // window.add(layeredPane); // add upgrade panel to the window
+        // upgradePanel.repaint();
 
 
+        // window.remove(upgradePanel); // remove upgrade panel from the window
+
+        // sleep(1000);
         // calling music player
         musik = new Music();
         // load music
@@ -186,11 +203,15 @@ public class GamePanel extends JPanel implements Runnable{
         this.addKeyListener(keyH);
         this.addMouseListener(mouseH);
         this.setFocusable(true);
-        System.out.println("how many time dot game panel run");
+
+        this.add(upgradePanel);
+
 
         player = new Player(this, keyH, mouseH);
 
+        frame = window; // store the JFrame reference
         loadSprites();
+        // getFrame(window);
     }
 
     private void loadSprites() throws IOException {
@@ -199,12 +220,13 @@ public class GamePanel extends JPanel implements Runnable{
         BufferedImage rollSheet = ImageIO.read(getClass().getResource("/resource/Colour1/NoOutline/120x80_PNGSheets/_Roll.png"));
         BufferedImage attackSheet = ImageIO.read(getClass().getResource("/resource/Colour1/NoOutline/120x80_PNGSheets/_Attack.png"));
         punchingBag = ImageIO.read(getClass().getResource("/Samll things/Untitled24_20250525142430.png"));
+        monsterSpawn = new MonsterSpawn(); // initialize monster spawn
 
         if (idleSheet == null || runSheet == null || rollSheet == null || attackSheet == null || punchingBag == null) {
             System.out.println("Error loading images");
             return;
         }
-
+ 
         frameWidth = idleSheet.getWidth() / 10;
         frameHeight = idleSheet.getHeight();
 
@@ -263,26 +285,23 @@ public class GamePanel extends JPanel implements Runnable{
     return false;
     }
 
-    private void onHitboxTrigger(Rectangle hitbox) {
-    // Identify which hitbox and do something
-    System.out.println("Player triggered hitbox at: " + hitbox);
-
-    // Example: show message, spawn monster, change map, etc.
-    }
     private void onHitboxTrigger(Hitbox hb) {
-    switch (hb.id) {
-        case "shop":
-            System.out.println("Player entered shop");
-            break;
-        case "upgrade":
-            visible = true;// Show the upgrade panel
-            System.out.println("Player entered upgrade area");
-            repaint();
-            break;
-         // Show the upgrade panel
-    }
-}
 
+        switch (hb.id) {
+            case "shop":
+                System.out.println("Player entered shop");
+                this.add(layeredPane); // Show upgrade panel\
+                // sleep(1);
+                break;
+            case "upgrade":
+                System.out.println("Player entered upgrade area");
+                // frame.add(upgradePanel); // Show upgrade panel\
+                // sleep(1);
+                upgradeLaunchPage.showPanel();
+                break;
+        }
+
+    }
 
     //used for the player to move
     public void update() {
@@ -314,8 +333,13 @@ public class GamePanel extends JPanel implements Runnable{
 
         // Defensive version of hitbox collision check
         for (Hitbox hb : hitboxes) {
-            if (hb == null || hb.rect == null) {
+            if (hb == null) {
                 // Skip if hitbox or its rectangle is null (avoid crashes)
+                System.out.println("Hitbox is null, skipping collision check.");
+                continue;
+            }
+            if(hb.rect == null){
+                // System.out.println("Hitbox rectangle is null, skipping collision check.");
                 continue;
             }
             
@@ -331,6 +355,7 @@ public class GamePanel extends JPanel implements Runnable{
             }
         }
 
+        // System.out.println(playerX + " " + playerY);
 
         if (keyH.up) {
             Rect.y -= playerSpeed;
@@ -338,6 +363,7 @@ public class GamePanel extends JPanel implements Runnable{
                 playerY -= playerSpeed;
                 direction = "up";
                 isMoving = true;
+                
             }
         }
         if (keyH.down) {
@@ -394,6 +420,9 @@ public class GamePanel extends JPanel implements Runnable{
 
             return; // Skip rest of update() while rolling
         }
+        if(keyH.hitbox) {
+            toggleHitbox = !toggleHitbox; // toggle hitbox visibility
+        }
 
         if (mouseH.attack) { // left click mouse button
             isMoving = false;
@@ -441,6 +470,10 @@ public class GamePanel extends JPanel implements Runnable{
         if(currentMap instanceof Traning) {
             if (punchingBag != null) {
                 g2.drawImage(punchingBag, drawBagX, drawBagY, 250, 250, this);
+                if(toggleHitbox) {
+                    g2.setColor(Color.RED);
+                    g2.drawRect(drawBagX, drawBagY, punchingBag.getWidth(), punchingBag.getHeight());
+                }
             }
         }
 
@@ -462,8 +495,74 @@ public class GamePanel extends JPanel implements Runnable{
         // drawing the player
         int playerDrawX = playerX - cameraX;
         int playerDrawY = playerY - cameraY;
+        playerXHitbox = playerDrawX; // update player hitbox x position
+        playerYHitbox = playerDrawY + 120; // update player hitbox y position
+        playerWidthForHitbox = tileSize; // update player width
+        playerHeightForHitbox = tileSize - 100; // update player height
 
         g2.drawImage(spriteToDraw,playerDrawX,playerDrawY, tileSize, tileSize, null);
+        if(toggleHitbox){
+            // playerDrawY = (playerY + 150) - cameraY;
+            g2.setColor(Color.BLUE);
+            g2.fillRect(playerX, playerY, tileSize, tileSize); // draw player hitbox outline
+            // g2.fillRecdt(playerXHitbox, playerYHitbox, playerWidthForHitbox, playerHeightForHitbox); // draw player hitbox
+        }
+
+        if(currentMap instanceof Loby) {
+            // System.out.println("runing monster spawn");a
+            for (int m = 0; m < monsterSpawn.monsterList.size(); m++) {
+                Monster monster = monsterSpawn.monsterList.get(m);
+                BufferedImage[] framesMonsters = monster.getFrame();
+
+                if (monster.getImage() != null) {
+                    monsterSpawn.moveMonsters(m);
+                    g2.drawImage(
+                        framesMonsters[currentFrame % framesMonsters.length],
+                        monster.getX() - cameraX,
+                        monster.getY() - cameraY,
+                        tileSize / 3,
+                        tileSize / 3,
+                        null
+                    );
+
+                    // --- Calculate distance ---
+                    int dx = playerX - monster.getX();
+                    int dy = playerY - monster.getY();
+                    double distance = Math.sqrt(dx * dx + dy * dy);
+
+                    // --- Start chasing if close enough ---
+                    if (distance < 200) {
+
+                        monsterMoveDelay++;
+                        if (monsterMoveDelay >= monsterMoveTrashold) {
+                            monsterMoveDelay = 0; // reset the delay counter
+                                
+                            // Update monster position towards player
+                            if (monster.getX() < playerX) {
+                                monster.setX((int) (monster.getX() + monster.getSpeed()));
+                            } else if (monster.getX() > playerX) {
+                                monster.setX((int) (monster.getX() - monster.getSpeed()));
+                            }
+
+                            if (monster.getY() < playerY + 120) {
+                                monster.setY((int) (monster.getY() + monster.getSpeed()));
+                            } else if (monster.getY() > playerY + 120) {
+                                monster.setY((int) (monster.getY() - monster.getSpeed()));
+                            }
+
+                            // System.out.println("Monster " + monster.getNamaMoster() + " is chasing the player.");
+                            // System.out.println("Monster position: (" + monster.getX() + ", " + monster.getY() + ")");
+                        } else {
+                            continue; // skip this iteration if not time to move
+                        }
+                    }
+                }
+                if(toggleHitbox){ // toggle visible hitbox
+                    g2.setColor(Color.GREEN);
+                    g2.drawRect(monster.getX() - cameraX, monster.getY() - cameraY, tileSize / 3, tileSize / 3);
+                }
+            }
+        }
         
         drawHealthAndManaBars(g2);// drawing the health and mana bars
 
@@ -555,32 +654,37 @@ public class GamePanel extends JPanel implements Runnable{
         setCursor(Cursor.getDefaultCursor());
     }
 
+    //teleporting the player to the next map
     public void mapTeleport(String newMapName) {
-    System.out.println("Player is at the edge of the map, teleporting to the next map.");
+        System.out.println("Player is at the edge of the map, teleporting to the next map.");
 
-    mapName = newMapName; // update current mapName
+        mapName = newMapName; // update current mapName
 
-    if (mapName.equals("loby")) {
-        currentMap = new Loby();
-        mapHeight = currentMap.getImage().getHeight();
-        mapWidth = currentMap.getImage().getWidth();
-        playerX = 1800;
-        playerY = 700;
-        setBoundsForMap("loby");
-        setHitboxForMap("loby");
-    } else if (mapName.equals("traning")) {
-        currentMap = new Traning();
-        mapHeight = currentMap.getImage().getHeight();
-        mapWidth = currentMap.getImage().getWidth();
-        playerX = 1800;
-        playerY = 700;
-        setBoundsForMap("traning");
-        setHitboxForMap("traning");
-        upgradePanel.setVisible(true);
+
+        if (mapName.equals("loby")) {
+            currentMap = new Loby();
+            mapHeight = currentMap.getImage().getHeight();
+            mapWidth = currentMap.getImage().getWidth();
+            playerX = 1800;
+            playerY = 700;
+            setBoundsForMap("loby");
+        } else if (mapName.equals("traning")) {
+            currentMap = new Traning();
+            mapHeight = currentMap.getImage().getHeight();
+            mapWidth = currentMap.getImage().getWidth();
+            playerX = 1800;
+            playerY = 700;
+            setBoundsForMap("traning");
+        }
+        
+
     }
-}
 
-public void CheckCollision() {
-}
-    
+    public void CheckCollision() {
+    }
+
+    private void sleep(int i) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'sleep'");
+    }
 }
