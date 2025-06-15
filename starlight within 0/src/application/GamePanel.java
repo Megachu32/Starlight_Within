@@ -13,6 +13,7 @@ import javax.swing.*;
 import map.Loby;
 import map.Maps;
 import map.Traning;
+import map.UpgradeLaunchPage;
 import map.UpgradePanel;
 
 public class GamePanel extends JPanel implements Runnable{
@@ -21,6 +22,7 @@ public class GamePanel extends JPanel implements Runnable{
     // bounde for the game
     ArrayList<Rectangle> bounds = new ArrayList<>(); // List to hold boundaries
     ArrayList<Hitbox> hitboxes = new ArrayList<>(); // List to hold hitboxes
+    UpgradeLaunchPage upgradeLaunchPage = new UpgradeLaunchPage();
 
     UpgradePanel upgradePanel;
     
@@ -278,8 +280,9 @@ public class GamePanel extends JPanel implements Runnable{
                 break;
             case "upgrade":
                 System.out.println("Player entered upgrade area");
-                frame.add(upgradePanel); // Show upgrade panel\
-                sleep(1);
+                // frame.add(upgradePanel); // Show upgrade panel\
+                // sleep(1);
+                upgradeLaunchPage.showPanel();
                 break;
         }
     }
@@ -344,6 +347,7 @@ public class GamePanel extends JPanel implements Runnable{
                 playerY -= playerSpeed;
                 direction = "up";
                 isMoving = true;
+                
             }
         }
         if (keyH.down) {
