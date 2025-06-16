@@ -8,7 +8,10 @@ import javax.swing.*;
 
 public class PlayerStatsAndInventoryLaunchPage {
 
-    static Player player = new Player(null, null, null);
+    static Player player1 = new Player(null, null, null);
+    static JLabel hpLabel;
+    static JLabel goldLabel;
+
 
     public static void ShowStatsAndInventory() {
         // Load image inside the method to avoid static block issues
@@ -67,29 +70,29 @@ public class PlayerStatsAndInventoryLaunchPage {
         statsPanel.setLayout(new BoxLayout(statsPanel, BoxLayout.Y_AXIS));
         statsPanel.setBackground(new Color(30, 30, 30));
 
-        JLabel hpLabel = new JLabel("HP: " + player.getHp() + " / " + player.getMaxHp());
+        hpLabel = new JLabel("HP: " + player1.getHp() + " / " + player1.getMaxHp());
         hpLabel.setForeground(Color.WHITE);
         hpLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         statsPanel.add(hpLabel);
 
-        JLabel LevelLabel = new JLabel("lvl: " + player.getLevel());
-        hpLabel.setForeground(Color.WHITE);
-        hpLabel.setFont(new Font("Arial", Font.PLAIN, 14));
-        statsPanel.add(LevelLabel);
+        JLabel levelLabel = new JLabel("lvl: " + player1.getLevel());
+        levelLabel.setForeground(Color.WHITE);
+        levelLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+        statsPanel.add(levelLabel);
 
-        JLabel goldLabel = new JLabel("Gold: " + player.getGold());
-        hpLabel.setForeground(Color.WHITE);
-        hpLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+        goldLabel = new JLabel("Gold: " + player1.getGold());
+        goldLabel.setForeground(Color.WHITE);
+        goldLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         statsPanel.add(goldLabel);
 
-        JLabel ManaLabel = new JLabel("Mana: " + player.getMana() + " / " + player.getManaMax());
-        hpLabel.setForeground(Color.WHITE);
-        hpLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+        JLabel ManaLabel = new JLabel("Mana: " + player1.getMana() + " / " + player1.getManaMax());
+        ManaLabel.setForeground(Color.WHITE);
+        ManaLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         statsPanel.add(ManaLabel);
 
-        JLabel DefenseLabel = new JLabel("Defense: " + player.getPhysicalArmor());
-        hpLabel.setForeground(Color.WHITE);
-        hpLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+        JLabel DefenseLabel = new JLabel("Defense: " + player1.getPhysicalArmor());
+        DefenseLabel.setForeground(Color.WHITE);
+        DefenseLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         statsPanel.add(DefenseLabel);
 
         StatsFrame.add(statsPanel, BorderLayout.SOUTH);

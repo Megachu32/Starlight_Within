@@ -60,7 +60,7 @@ public class GamePanel extends JPanel implements Runnable{
     }
     {
     hitboxes.add(new Hitbox(500, 900, 100, 100, "shop"));
-    hitboxes.add(new Hitbox(500, 1700, 100, 100, "upgrade"));
+    hitboxes.add(new Hitbox(500, 1500, 100, 100, "upgrade"));
     hitboxes.add(new Hitbox(3000, 900, 100, 100, "startGame"));
     hitboxes.add(new Hitbox(3000, 1700, 100, 100, "idk2")); // Example hitbox, adjust as needed
     }
@@ -69,8 +69,8 @@ public class GamePanel extends JPanel implements Runnable{
 
     if (mapName.equals("loby")) {
         hitboxes.add(new Hitbox(500, 900, 100, 100, "shop"));
-        hitboxes.add(new Hitbox(500, 1700, 100, 100, "upgrade"));
-        hitboxes.add(new Hitbox(3000, 900, 100, 100, "idk1"));
+        hitboxes.add(new Hitbox(500, 1500, 100, 100, "upgrade"));
+        hitboxes.add(new Hitbox(3000, 900, 100, 100, "startGame"));
         hitboxes.add(new Hitbox(3000, 1700, 100, 100, "idk2"));
     } else if (mapName.equals("traning")) {
         hitboxes.add(new Hitbox(3000, 900, 100, 100, "idk1"));
@@ -87,9 +87,9 @@ public class GamePanel extends JPanel implements Runnable{
             bounds.add(new Rectangle(0, 1850, 10000, 5));
             // add other Loby bounds here
             hitboxes.add(new Hitbox(500, 900, 100, 100, "shop"));
-            hitboxes.add(new Hitbox(500, 1700, 100, 100, "upgrade"));
+            hitboxes.add(new Hitbox(500, 1500, 100, 100, "upgrade"));
             hitboxes.add(new Hitbox(3000, 900, 100, 100, "startGame"));
-            hitboxes.add(new Hitbox(3000, 1700, 100, 100, "idk2")); // Example hitbox, adjust as needed
+            hitboxes.add(new Hitbox(3000, 1700, 100, 100, "idk2"));
             
         } else if (mapName.equals("traning")) {
             bounds.add(new Rectangle(0, 600, 10000, 5));
@@ -97,14 +97,14 @@ public class GamePanel extends JPanel implements Runnable{
             // add your specific Training bounds here
         }
 
-        if (mapName.equals("loby")) {
-            hitboxes.add(new Hitbox(500, 900, 100, 100, "shop"));
-            hitboxes.add(new Hitbox(500, 1700, 100, 100, "upgrade"));
-            hitboxes.add(new Hitbox(3000, 900, 100, 100, "idk1"));
-            hitboxes.add(new Hitbox(3000, 1700, 100, 100, "idk2"));
-        } else if (mapName.equals("traning")) {
+        // if (mapName.equals("loby")) {
+        //     hitboxes.add(new Hitbox(500, 900, 100, 100, "shop"));
+        //     hitboxes.add(new Hitbox(500, 1700, 100, 100, "upgrade"));
+        //     hitboxes.add(new Hitbox(3000, 900, 100, 100, "idk1"));
+        //     hitboxes.add(new Hitbox(3000, 1700, 100, 100, "idk2"));
+        // } else if (mapName.equals("traning")) {
 
-        }
+        // }
         
     }
     // Removed duplicate method setHitboxForMap(String maName)
@@ -141,6 +141,11 @@ public class GamePanel extends JPanel implements Runnable{
     Instant lastRollTime = Instant.now(); // when you last rolled
     Instant lastMagicRegen = Instant.now();// current time for calculating rolling delay
     Instant lastHealthRegen = Instant.now();// current time for calculating rolling delay
+    Instant lastUseMagic = Instant.now();// current time for calculating rolling delay
+    
+
+    int magicCounter = 0; // counter for magic
+    final int magicDuration = 5; // How many frames the magic lasts (same as magic animation frames)
 
     KeyHandler keyH = new KeyHandler(); // calling keybaord
     MouseHandler mouseH = new MouseHandler(); // calling mouse
@@ -199,6 +204,20 @@ public class GamePanel extends JPanel implements Runnable{
         return false;
     }
 
+    public boolean canUseMagic(){
+        //TODO connect to roll method
+        Instant now = Instant.now();
+        Duration timeElapsed = Duration.between(lastUseMagic, now);
+
+        if (timeElapsed.getSeconds() >= 1) {
+            lastUseMagic = now; // update to the new roll time
+            keyH.magic = true; // reset the space key
+            return true;
+        }
+        keyH.space = false; // reset the space key
+        return false;
+    }
+
     public boolean canMagicRegen() {
         //TODO connect to roll method
         Instant now = Instant.now();
@@ -206,7 +225,7 @@ public class GamePanel extends JPanel implements Runnable{
 
         if (timeElapsed.getSeconds() >= 4) {
             lastMagicRegen = now; // update to the new roll time
-            keyH.space = true; // reset the space key
+            // keyH.space = true; // reset the space key
             return true;
         }
         keyH.space = false; // reset the space key
@@ -218,9 +237,9 @@ public class GamePanel extends JPanel implements Runnable{
         Instant now = Instant.now();
         Duration timeElapsed = Duration.between(lastHealthRegen, now);
 
-        if (timeElapsed.getSeconds() >= 10) {
+        if (timeElapsed.getSeconds() >= 5) {
             lastHealthRegen = now; // update to the new roll time
-            keyH.space = true; // reset the space key
+            // keyH.space = true; // reset the space key
             return true;
         }
         keyH.space = false; // reset the space key
@@ -347,12 +366,12 @@ public class GamePanel extends JPanel implements Runnable{
 
         switch (hb.id) {
             case "shop":
-                System.out.println("Player entered shop");
+                // System.out.println("Player entered shop");
                 ShopLaunchPage.showPanel(player); // Show shop panel
                 break;
             case "upgrade":
-                System.out.println("Player entered upgrade area");
-                UpgradeLaunchPage.showPanel(); // Show upgrade panel
+                // System.out.println("Player entered upgrade area");
+                UpgradeLaunchPage.showPanel(player); // Show upgrade panel
                 break;
         }
 
@@ -394,9 +413,9 @@ public class GamePanel extends JPanel implements Runnable{
     
         Duration timeSinceLastRoll = Duration.between(lastRollTime, Instant.now());
     
-        Rectangle Rect = new Rectangle(playerX, playerY, tileSize, tileSize);
+        Rectangle Rect = new Rectangle(playerXHitbox, playerYHitbox, playerWidthForHitbox, playerHeightForHitbox);
 
-        Rectangle playerRect = new Rectangle(playerX, playerY, tileSize, tileSize);
+        Rectangle playerRect = new Rectangle(playerXHitbox, playerYHitbox, playerWidthForHitbox, playerHeightForHitbox);
 
         // Defensive version of hitbox collision check
         for (Hitbox hb : hitboxes) {
@@ -487,6 +506,21 @@ public class GamePanel extends JPanel implements Runnable{
 
             return; // Skip rest of update() while rolling
         }
+        if(keyH.magic) {
+            isUsingMagic = true; // Set magic usage flag
+            player.setPyhsicalDamage(player.getPyhsicalDamage() + 10); // Increase physical damage for magic
+        } 
+        if(isUsingMagic && (player.getMana() > 0)) {
+            // Check if player has enough mana to use magic
+            if (canUseMagic()) {
+                player.setMana(player.getMana() - 10); // Use magic
+                System.out.println("Player used magic, remaining mana: " + player.getMana());
+            }
+        }else {
+            isUsingMagic = false; // Reset magic usage flag
+            player.setPyhsicalDamage(player.getPyhsicalDamage() - 10); // Increase physical damage for magic
+            keyH.magic = false; // Reset magic key state
+        }
         if(keyH.hitbox) {
             toggleHitbox = !toggleHitbox; // toggle hitbox visibility
         }
@@ -514,6 +548,7 @@ public class GamePanel extends JPanel implements Runnable{
         }
         
         if(isAttacking) {
+            if(monsterRect == null) return; // Skip if monsterRect is null
             if(playerRect.intersects(monsterRect) &&  currentMonster != null) {
                 System.out.println("Current monster: " + currentMonster.getNamaMoster());
                 System.out.println("monster hp before:"+ currentMonster.getMonsterHp());
@@ -604,8 +639,8 @@ public class GamePanel extends JPanel implements Runnable{
         // drawing the player
         int playerDrawX = playerX - cameraX;
         int playerDrawY = playerY - cameraY;
-        playerXHitbox = playerDrawX; // update player hitbox x position
-        playerYHitbox = playerDrawY + 120; // update player hitbox y position
+        playerXHitbox = playerX; // update player hitbox x position
+        playerYHitbox = playerY + 120; // update player hitbox y position
         playerWidthForHitbox = tileSize; // update player width
         playerHeightForHitbox = tileSize - 100; // update player height
 
@@ -744,28 +779,28 @@ public class GamePanel extends JPanel implements Runnable{
             // playerDrawY = (playerY + 150) - cameraY;
             g2.setColor(Color.BLUE);
             // g2.fillRect(playerX, playerY, tileSize, tileSize); // draw player hitbox outline
-            g2.drawRect(playerXHitbox, playerYHitbox, playerWidthForHitbox, playerHeightForHitbox); // draw player hitbox
+            g2.drawRect(playerXHitbox - cameraX, playerYHitbox - cameraY, playerWidthForHitbox, playerHeightForHitbox); // draw player hitbox
         }
         
-        drawHealthAndManaBars(g2);// drawing the health and mana bars
-
+        
         g2.setColor(Color.RED);
         for (Rectangle rect : bounds) {
             g2.drawRect(rect.x - cameraX, rect.y - cameraY, rect.width, rect.height);
         }
         g2.setColor(new Color(0, 255, 0, 100)); // semi-transparent green for hitboxes
-
+        
         for (Hitbox hitbox : hitboxes) {
             if("shop".equals(hitbox.id)){
-                g.drawImage(redstore.getImage(), hitbox.x - 200 - cameraX, hitbox.y - 300 - cameraY, this);
+                g.drawImage(redstore.getImage(), hitbox.x - 240 - cameraX, hitbox.y - 300 - cameraY, this);
             }
             else if("upgrade".equals(hitbox.id)){
-                g.drawImage(bluestore.getImage(), hitbox.x - cameraX, hitbox.y - 500 - cameraY, this);
+                g.drawImage(bluestore.getImage(), hitbox.x - 150 - cameraX, hitbox.y - 260 - cameraY, this);
             }
-            else{
+            // else{
                 g2.fillRect(hitbox.x - cameraX, hitbox.y - cameraY, hitbox.width, hitbox.height);
-            }
+            // }
         }
+        drawHealthAndManaBars(g2);// drawing the health and mana bars
 
         g2.dispose();
 
@@ -866,6 +901,7 @@ public class GamePanel extends JPanel implements Runnable{
             playerX = 1800;
             playerY = 700;
             setBoundsForMap("traning");
+            // setHitboxForMap("loby");
         } else if (mapName.equals("battle")) {
             try {
                 monsterSpawn = new MonsterSpawn();

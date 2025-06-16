@@ -5,7 +5,7 @@ import map.PlayerStatsAndInventoryLaunchPage;
 
     public class KeyHandler implements KeyListener {
 
-        public static boolean up, down, left, right, space, block, hitbox, EscButton, stats;
+        public static boolean up, down, left, right, space, magic, hitbox, EscButton, stats;
 
         // for when a key is typed
         @Override
@@ -36,7 +36,7 @@ import map.PlayerStatsAndInventoryLaunchPage;
                 hitbox = true;
             }
             else if(code == KeyEvent.VK_Q){
-                block = true;
+                magic = true;
             }
             else if(code == KeyEvent.VK_ESCAPE){
                 EscButton = true;
@@ -63,9 +63,6 @@ import map.PlayerStatsAndInventoryLaunchPage;
             }
             else if(code == KeyEvent.VK_E){
                 hitbox = false;
-            }
-            else if(code == KeyEvent.VK_Q){
-                block = false;
             }
             else if(code == KeyEvent.VK_ESCAPE){
                 EscButton = false;

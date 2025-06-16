@@ -19,6 +19,7 @@ public class ShopLaunchPage {
 
     public static void showPanel(Player player) {
         if ((ShopFrame == null || !ShopFrame.isDisplayable()) && !cooldown) {
+            System.out.println("Opening shop panel..."); // Debug message
             cooldown = true;
 
             ShopFrame = new JFrame("Shop");
@@ -110,6 +111,7 @@ public class ShopLaunchPage {
             ShopFrame.add(shopButton1);
             ShopFrame.add(shopButton2);
             ShopFrame.add(shopButton3); // Fix hered
+            ShopFrame.setVisible(true); // Make the frame visible
         }
     }
 
