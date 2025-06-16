@@ -588,15 +588,20 @@ public class GamePanel extends JPanel implements Runnable{
             // System.out.println("runing monster spawn");
             Monster monster = monsterSpawn.monsterList.get(currentBoss); // assuming only one boss monster
                 BufferedImage[] framesMonsters = monster.getFrame();
+                //TODO add boss monster movement logic
                 if (monster.getImage() != null) {
                     g2.drawImage(
                         framesMonsters[currentFrame % framesMonsters.length],
                         monster.getX() - cameraX,
                         monster.getY() - cameraY,
-                        tileSize / 3,
-                        tileSize / 3,
+                        tileSize / 2,
+                        tileSize / 2,
                         null
                     );
+                }
+                if(toggleHitbox){ // toggle visible hitbox
+                    g2.setColor(Color.GREEN);
+                    g2.drawRect(monster.getX() - cameraX, monster.getY() - cameraY, tileSize / 2, tileSize / 2);
                 }
         }
 
