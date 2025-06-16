@@ -18,6 +18,7 @@ import map.Boss;
 import map.EscMenuLaunchPage;
 import map.Loby;
 import map.Maps;
+import map.PlayerStatsAndInventoryLaunchPage;
 import map.ShopLaunchPage;
 import map.Traning;
 import map.UpgradeLaunchPage;
@@ -33,13 +34,8 @@ public class GamePanel extends JPanel implements Runnable{
     UpgradeLaunchPage upgradeLaunchPage = new UpgradeLaunchPage();
     ShopLaunchPage shopLaunchPage = new ShopLaunchPage();
     EscMenuLaunchPage escMenuLaunchPage = new EscMenuLaunchPage();
-=======
-
->>>>>>> b2c23a729d4462f254b7ad5430fcbaf0012b1a99
 
     UpgradePanel upgradePanel;
-
-
 
     Player player; // calling the player
 
@@ -84,16 +80,32 @@ public class GamePanel extends JPanel implements Runnable{
 
     public void setBoundsForMap(String mapName) {
     bounds.clear(); // Remove old bounds
+    hitboxes.clear(); // Remove old hitboxes
 
         if (mapName.equals("loby")) {
             bounds.add(new Rectangle(0, 500, 10000, 5));
             bounds.add(new Rectangle(0, 1850, 10000, 5));
             // add other Loby bounds here
+            hitboxes.add(new Hitbox(500, 900, 100, 100, "shop"));
+            hitboxes.add(new Hitbox(500, 1700, 100, 100, "upgrade"));
+            hitboxes.add(new Hitbox(3000, 900, 100, 100, "startGame"));
+            hitboxes.add(new Hitbox(3000, 1700, 100, 100, "idk2")); // Example hitbox, adjust as needed
+            
         } else if (mapName.equals("traning")) {
             bounds.add(new Rectangle(0, 600, 10000, 5));
             bounds.add(new Rectangle(0, 1850, 10000, 5));
             // add your specific Training bounds here
         }
+
+        if (mapName.equals("loby")) {
+            hitboxes.add(new Hitbox(500, 900, 100, 100, "shop"));
+            hitboxes.add(new Hitbox(500, 1700, 100, 100, "upgrade"));
+            hitboxes.add(new Hitbox(3000, 900, 100, 100, "idk1"));
+            hitboxes.add(new Hitbox(3000, 1700, 100, 100, "idk2"));
+        } else if (mapName.equals("traning")) {
+
+        }
+        
     }
     // Removed duplicate method setHitboxForMap(String maName)
 
@@ -118,13 +130,17 @@ public class GamePanel extends JPanel implements Runnable{
     boolean isRolling = false;
     boolean rolling = false;
     boolean isAttacking = false; // for the attack animation
+    boolean isUsingMagic = false; // for the attack animation
+
     int rollingCounter = 0;
     int attackCounter = 0;
     final int rollDuration = 36; // How many frames the roll lasts (same as roll animation frames)
     final int attackDuration = 12; // How many frames the attack lasts (same as attack animation frames)
     int rollDelay = 0; // How long to wait before rolling again
-    Instant timeNow = Instant.now();// current time for calculating rolling delay
-    Instant lastRollTime = Instant  .now(); // when you last rolled
+
+    Instant lastRollTime = Instant.now(); // when you last rolled
+    Instant lastMagicRegen = Instant.now();// current time for calculating rolling delay
+    Instant lastHealthRegen = Instant.now();// current time for calculating rolling delay
 
     KeyHandler keyH = new KeyHandler(); // calling keybaord
     MouseHandler mouseH = new MouseHandler(); // calling mouse
@@ -162,6 +178,8 @@ public class GamePanel extends JPanel implements Runnable{
     int monsterMoveDelay = 0; // delay for monster movement
     final int monsterMoveTrashold = 10; // counter for monster movement
     int currentBoss = 0; // current boss id
+    Rectangle monsterRect;
+    Monster currentMonster; // current monster
 
     Boolean toggleHitbox = false;
 
@@ -174,6 +192,34 @@ public class GamePanel extends JPanel implements Runnable{
 
         if (timeElapsed.getSeconds() >= 1) {
             lastRollTime = now; // update to the new roll time
+            keyH.space = true; // reset the space key
+            return true;
+        }
+        keyH.space = false; // reset the space key
+        return false;
+    }
+
+    public boolean canMagicRegen() {
+        //TODO connect to roll method
+        Instant now = Instant.now();
+        Duration timeElapsed = Duration.between(lastMagicRegen, now);
+
+        if (timeElapsed.getSeconds() >= 4) {
+            lastMagicRegen = now; // update to the new roll time
+            keyH.space = true; // reset the space key
+            return true;
+        }
+        keyH.space = false; // reset the space key
+        return false;
+    }
+
+    public boolean canHealthRegen() {
+        //TODO connect to roll method
+        Instant now = Instant.now();
+        Duration timeElapsed = Duration.between(lastHealthRegen, now);
+
+        if (timeElapsed.getSeconds() >= 10) {
+            lastHealthRegen = now; // update to the new roll time
             keyH.space = true; // reset the space key
             return true;
         }
@@ -302,7 +348,7 @@ public class GamePanel extends JPanel implements Runnable{
         switch (hb.id) {
             case "shop":
                 System.out.println("Player entered shop");
-                ShopLaunchPage.showPanel(); // Show shop panel
+                ShopLaunchPage.showPanel(player); // Show shop panel
                 break;
             case "upgrade":
                 System.out.println("Player entered upgrade area");
@@ -459,6 +505,22 @@ public class GamePanel extends JPanel implements Runnable{
             escMenuLaunchPage.showPanel(); // Show the Esc menu
             keyH.EscButton = false; // Reset the Esc button state
         }
+        
+        if(canMagicRegen() && player.getMana() < player.getManaMax()) {
+            player.setMana((player.getMana() + 10 > player.getManaMax()) ? player.getManaMax() : player.getMana() + 10); // Regenerate magic
+        }
+        if(canHealthRegen() && player.getHp() < player.getMaxHp()) {
+            player.setHp((player.getHp() + 10 > player.getMaxHp()) ? player.getMaxHp() : player.getHp() + 10); // Regenerate health
+        }
+        
+        if(isAttacking) {
+            if(playerRect.intersects(monsterRect) &&  currentMonster != null) {
+                System.out.println("Current monster: " + currentMonster.getNamaMoster());
+                System.out.println("monster hp before:"+ currentMonster.getMonsterHp());
+                currentMonster.setMonsterHp(currentMonster.getMonsterHp() - player.getPyhsicalDamage()); // Reduce monster health
+                System.out.println("monster hp after:"+ currentMonster.getMonsterHp());
+            } // draw player hitbox
+        }
     }
 
     // public Image RedStoreImage(){
@@ -550,9 +612,17 @@ public class GamePanel extends JPanel implements Runnable{
         if(currentMap instanceof Battle) {
             // System.out.println("runing monster spawn");a
             for (int m = 0; m < monsterSpawn.monsterList.size(); m++) {
+                if(monsterSpawn.monsterList.get(m).getMonsterHp() <= 0) {
+                    System.out.println("Gold: " + player.getGold());
+                    player.setGold(0);
+                    System.out.println("Gold now: " + player.getGold());
+                    monsterSpawn.monsterList.remove(m); // remove dead monsters
+                    continue; // skip if monster is null
+                }
                 Monster monster = monsterSpawn.monsterList.get(m);
                 BufferedImage[] framesMonsters = monster.getFrame();
-
+                currentMonster = monster; // set the current monster
+                monsterRect = new Rectangle(monster.getX(), monster.getY(), tileSize / 3, tileSize / 3);
                 if(monster.getY() < 800){
                     monster.setY(800); // prevent monster from going out of bounds
                 }
@@ -584,7 +654,7 @@ public class GamePanel extends JPanel implements Runnable{
 
                     // --- Start chasing if close enough ---
                     if (distance < 200) {
-
+                        // System.out.println("distance: " + distance);
                         monsterMoveDelay++;
                         if (monsterMoveDelay >= monsterMoveTrashold) {
                             monsterMoveDelay = 0; // reset the delay counter
@@ -619,8 +689,11 @@ public class GamePanel extends JPanel implements Runnable{
         if(currentMap instanceof Boss) {
             // System.out.println("runing monster spawn");
             Monster monster = monsterSpawn.monsterList.get(currentBoss); // assuming only one boss monster
+            if(monster.getMonsterHp() <= 0){
+                return;
+            }
                 BufferedImage[] framesMonsters = monster.getFrame();
-                //TODO add boss monster movement logic
+                //TODO add boss monster movement logic                                      
                 if (monster.getImage() != null) {
                     g2.drawImage(
                         framesMonsters[currentFrame % framesMonsters.length],
@@ -630,6 +703,35 @@ public class GamePanel extends JPanel implements Runnable{
                         tileSize / 2,
                         null
                     );
+                    monsterRect = new Rectangle(monster.getX(), monster.getY(), tileSize / 3, tileSize / 3);
+                    int dx = playerX - monster.getX();
+                    int dy = playerY - monster.getY();
+                    double distance = Math.sqrt(dx * dx + dy * dy);
+
+                    // --- Start chasing if close enough ---
+                    if (distance < 200) {
+                        // System.out.println("distance: " + distance);
+                        monsterMoveDelay++;
+                        if (monsterMoveDelay >= monsterMoveTrashold) {
+                            monsterMoveDelay = 0; // reset the delay counter
+                                
+                            // Update monster position towards player
+                            if (monster.getX() < playerX) {
+                                monster.setX((int) (monster.getX() + monster.getSpeed()));
+                            } else if (monster.getX() > playerX) {
+                                monster.setX((int) (monster.getX() - monster.getSpeed()));
+                            }
+
+                            if (monster.getY() < playerY + 120) {
+                                monster.setY((int) (monster.getY() + monster.getSpeed()));
+                            } else if (monster.getY() > playerY + 120) {
+                                monster.setY((int) (monster.getY() - monster.getSpeed()));
+                            }
+
+                            // System.out.println("Monster " + monster.getNamaMoster() + " is chasing the player.");
+                            // System.out.println("Monster position: (" + monster.getX() + ", " + monster.getY() + ")");
+                        } 
+                    }
                 }
                 if(toggleHitbox){ // toggle visible hitbox
                     g2.setColor(Color.GREEN);
@@ -641,7 +743,7 @@ public class GamePanel extends JPanel implements Runnable{
         if(toggleHitbox){
             // playerDrawY = (playerY + 150) - cameraY;
             g2.setColor(Color.BLUE);
-            g2.fillRect(playerX, playerY, tileSize, tileSize); // draw player hitbox outline
+            // g2.fillRect(playerX, playerY, tileSize, tileSize); // draw player hitbox outline
             g2.drawRect(playerXHitbox, playerYHitbox, playerWidthForHitbox, playerHeightForHitbox); // draw player hitbox
         }
         
@@ -790,9 +892,11 @@ public class GamePanel extends JPanel implements Runnable{
                 monsterSpawn.monsterList.get(i).setMagicalMonsterDamage(1000);
                 monsterSpawn.monsterList.get(i).setPhysicalMonsterArmor(1000);
                 monsterSpawn.monsterList.get(i).setPhysicalMosterDamgae(1000);
+                monsterSpawn.monsterList.get(i).setSpeed(10);
             }
             Random ran = new Random();
             currentBoss = ran.nextInt(monsterSpawn.monsterList.size()); // get a random boss monster
+            System.out.println(monsterSpawn.monsterList.size());
             currentMap = new Boss();
             mapHeight = currentMap.getImage().getHeight();
             mapWidth = currentMap.getImage().getWidth();

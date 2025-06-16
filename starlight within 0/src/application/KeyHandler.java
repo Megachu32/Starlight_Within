@@ -5,7 +5,7 @@ import map.PlayerStatsAndInventoryLaunchPage;
 
     public class KeyHandler implements KeyListener {
 
-        public static boolean up, down, left, right, space, block, hitbox, EscButton;
+        public static boolean up, down, left, right, space, block, hitbox, EscButton, stats;
 
         // for when a key is typed
         @Override
@@ -43,7 +43,7 @@ import map.PlayerStatsAndInventoryLaunchPage;
             }
             else if(code == KeyEvent.VK_M){
                 // This is where you would call the method to show the player stats and inventory
-                PlayerStatsAndInventoryLaunchPage.ShowStatsAndInventory();
+                PlayerStatsAndInventoryLaunchPage.ShowStatsAndInventory(); // Show the player stats and inventory
             }
         }
 

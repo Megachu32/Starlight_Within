@@ -8,7 +8,7 @@ import javax.swing.*;
 
 public class PlayerStatsAndInventoryLaunchPage {
 
-    static Player player = new Player(null, null, null); // Replace with actual player
+    static Player player = new Player(null, null, null);
 
     public static void ShowStatsAndInventory() {
         // Load image inside the method to avoid static block issues

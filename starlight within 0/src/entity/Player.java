@@ -31,7 +31,8 @@ public class Player extends Entity{
         this.manaMax = 100;
         this.hp = 50;
         this.maxHp = 100;
-        this.gold = 0;
+        this.gold = 10;
+        this.pyhsicalDamage = 10;
     }
 
     public GamePanel getGp() {

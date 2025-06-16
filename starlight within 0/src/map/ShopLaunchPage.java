@@ -5,13 +5,19 @@ import java.awt.Font;
 import java.awt.event.*;
 import javax.swing.*;
 
+import entity.Player;
+
 public class ShopLaunchPage {
     private static JFrame ShopFrame = null;
     private static boolean cooldown = false;
     static int startY = 100;
     static int gap = 60;
 
-    public static void showPanel() {
+    static int swordPrice = 100; // Price for sword upgrade
+    static int shieldPrice = 100; // Price for shield upgrade
+    static int armorPrice = 100; // Price for armor upgrade
+
+    public static void showPanel(Player player) {
         if ((ShopFrame == null || !ShopFrame.isDisplayable()) && !cooldown) {
             cooldown = true;
 
@@ -67,22 +73,43 @@ public class ShopLaunchPage {
             shopButton3.setFont(buttonFont);
 
             shopButton1.addActionListener(e -> {
-                System.out.println("Sword upgraded!");
-                infoShop.setText("Sword upgraded!"); // Update info label
+                if(player.getGold() >= swordPrice) {
+                    player.setGold(player.getGold() - swordPrice); // Deduct gold
+                    player.setPyhsicalDamage(player.getPyhsicalDamage() + 5); // Upgrade damage
+                    swordPrice += 50; // Increase price for next upgrade
+                    System.out.println("Gold deducted: 100");
+                    infoShop.setText("Sword upgraded!"); // Update info label
+                } else {
+                    infoShop.setText("Not enough gold!"); // Update info label
+                }
             });
             shopButton2.addActionListener(e -> {
-                System.out.println("shiled upgraded!");
-                infoShop.setText("Shield upgraded!"); // Update info label
+                if(player.getGold() >= shieldPrice) {
+                    player.setGold(player.getGold() - shieldPrice); // Deduct gold
+                    player.setPhysicalArmor(player.getPhysicalArmor() + 5); // Upgrade armor
+                    shieldPrice += 50; // Increase price for next upgrade
+                    System.out.println("Shield upgraded!");
+                    infoShop.setText("Shield upgraded!"); // Update info label
+                } else {
+                    infoShop.setText("Not enough gold!"); // Update info label
+                }
             });
             shopButton3.addActionListener(e -> {
-                System.out.println("armor upgraded!");
-                infoShop.setText("Armor upgraded!"); // Update info label
+                if(player.getGold() >= armorPrice) {
+                    player.setGold(player.getGold() - armorPrice); // Deduct gold
+                    player.setMaxHp(player.getMaxHp() + 10); // Upgrade health
+                    player.setHp(player.getHp() + 10); // Restore health after upgrade
+                    armorPrice += 50; // Increase price for next upgrade
+                    System.out.println("Armor upgraded!");
+                    infoShop.setText("Armor upgraded!"); // Update info label
+                } else {
+                    infoShop.setText("Not enough gold!"); // Update info label
+                }
             });
 
             ShopFrame.add(shopButton1);
             ShopFrame.add(shopButton2);
-            ShopFrame.add(shopButton3); // Fix here
-            ShopFrame.setVisible(true);
+            ShopFrame.add(shopButton3); // Fix hered
         }
     }
 
