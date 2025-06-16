@@ -15,10 +15,12 @@ import javax.swing.*;
 
 import map.Battle;
 import map.Boss;
+import map.EscMenuLaunchPage;
 import map.Loby;
 import map.Maps;
 import map.ShopLaunchPage;
 import map.Traning;
+import map.UpgradeLaunchPage;
 import map.UpgradePanel;
 
 public class GamePanel extends JPanel implements Runnable{
@@ -27,13 +29,10 @@ public class GamePanel extends JPanel implements Runnable{
     // bounde for the game
     ArrayList<Rectangle> bounds = new ArrayList<>(); // List to hold boundaries
     ArrayList<Hitbox> hitboxes = new ArrayList<>(); // List to hold hitboxes
-<<<<<<< HEAD
+
     UpgradeLaunchPage upgradeLaunchPage = new UpgradeLaunchPage();
     ShopLaunchPage shopLaunchPage = new ShopLaunchPage();
     EscMenuLaunchPage escMenuLaunchPage = new EscMenuLaunchPage();
-=======
-
->>>>>>> b2c23a729d4462f254b7ad5430fcbaf0012b1a99
 
     UpgradePanel upgradePanel;
 
