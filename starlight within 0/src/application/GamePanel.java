@@ -8,9 +8,13 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Random;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import map.EscMenuLaunchPage;
+
+import map.Battle;
+import map.Boss;
 import map.Loby;
 import map.Maps;
 import map.ShopLaunchPage;
@@ -153,6 +157,7 @@ public class GamePanel extends JPanel implements Runnable{
     MonsterSpawn monsterSpawn; // calling the monster spawn
     int monsterMoveDelay = 0; // delay for monster movement
     final int monsterMoveTrashold = 10; // counter for monster movement
+    int currentBoss = 0; // current boss id
 
     Boolean toggleHitbox = false;
 
@@ -330,6 +335,18 @@ public class GamePanel extends JPanel implements Runnable{
         } else if (mapName.equals("traning") && playerX == mapWidth - tileSize) {
             mapName = "loby";
             mapTeleport(mapName);
+        } else if (mapName.equals("loby") && playerX == mapWidth - tileSize) {
+            mapName = "battle";
+            mapTeleport(mapName);
+        } else if (mapName.equals("battle") && playerY == 546) {
+            mapName = "boss";
+            mapTeleport(mapName);
+        } else if (mapName.equals("boss") && playerX == 0) {
+            mapName = "battle";
+            mapTeleport(mapName);
+        } else if (mapName.equals("battle") && playerX == 0) {
+            mapName = "loby";
+            mapTeleport(mapName);
         }
     
         Duration timeSinceLastRoll = Duration.between(lastRollTime, Instant.now());
@@ -370,6 +387,7 @@ public class GamePanel extends JPanel implements Runnable{
                 playerY -= playerSpeed;
                 direction = "up";
                 isMoving = true;
+                // System.out.println("Player moved up to: " + playerY);
             }
         }
         if (keyH.down) {
@@ -386,6 +404,7 @@ public class GamePanel extends JPanel implements Runnable{
                 playerX -= playerSpeed;
                 direction = "left";
                 isMoving = true;
+                // System.out.println("Player moved left to: " + playerX);
             }
         }
         if (keyH.right) {
@@ -397,7 +416,6 @@ public class GamePanel extends JPanel implements Runnable{
             }
         }
         if (keyH.space) {
-            visible = true;
             boolean canRoll = canRoll();
             if (canRoll) {
                 rolling = true;
@@ -510,19 +528,24 @@ public class GamePanel extends JPanel implements Runnable{
         playerWidthForHitbox = tileSize; // update player width
         playerHeightForHitbox = tileSize - 100; // update player height
 
-        g2.drawImage(spriteToDraw,playerDrawX,playerDrawY, tileSize, tileSize, null);
-        if(toggleHitbox){
-            // playerDrawY = (playerY + 150) - cameraY;
-            g2.setColor(Color.BLUE);
-            g2.fillRect(playerX, playerY, tileSize, tileSize); // draw player hitbox outline
-            // g2.fillRecdt(playerXHitbox, playerYHitbox, playerWidthForHitbox, playerHeightForHitbox); // draw player hitbox
-        }
-
-        if(currentMap instanceof Loby) {
+        if(currentMap instanceof Battle) {
             // System.out.println("runing monster spawn");a
             for (int m = 0; m < monsterSpawn.monsterList.size(); m++) {
                 Monster monster = monsterSpawn.monsterList.get(m);
                 BufferedImage[] framesMonsters = monster.getFrame();
+
+                if(monster.getY() < 800){
+                    monster.setY(800); // prevent monster from going out of bounds
+                }
+                if(monster.getY() > 1500){
+                    monster.setY(1500); // prevent monster from going out of bounds
+                }
+                if(monster.getX() < 100){
+                    monster.setX(100); // prevent monster from going out of bounds
+                }
+                if(monster.getX() > 3100){
+                    monster.setX(3100); // prevent monster from going out of bounds
+                }
 
                 if (monster.getImage() != null) {
                     monsterSpawn.moveMonsters(m);
@@ -572,6 +595,35 @@ public class GamePanel extends JPanel implements Runnable{
                     g2.drawRect(monster.getX() - cameraX, monster.getY() - cameraY, tileSize / 3, tileSize / 3);
                 }
             }
+        }
+
+        if(currentMap instanceof Boss) {
+            // System.out.println("runing monster spawn");
+            Monster monster = monsterSpawn.monsterList.get(currentBoss); // assuming only one boss monster
+                BufferedImage[] framesMonsters = monster.getFrame();
+                //TODO add boss monster movement logic
+                if (monster.getImage() != null) {
+                    g2.drawImage(
+                        framesMonsters[currentFrame % framesMonsters.length],
+                        monster.getX() - cameraX,
+                        monster.getY() - cameraY,
+                        tileSize / 2,
+                        tileSize / 2,
+                        null
+                    );
+                }
+                if(toggleHitbox){ // toggle visible hitbox
+                    g2.setColor(Color.GREEN);
+                    g2.drawRect(monster.getX() - cameraX, monster.getY() - cameraY, tileSize / 2, tileSize / 2);
+                }
+        }
+
+        g2.drawImage(spriteToDraw,playerDrawX,playerDrawY, tileSize, tileSize, null);
+        if(toggleHitbox){
+            // playerDrawY = (playerY + 150) - cameraY;
+            g2.setColor(Color.BLUE);
+            g2.fillRect(playerX, playerY, tileSize, tileSize); // draw player hitbox outline
+            g2.drawRect(playerXHitbox, playerYHitbox, playerWidthForHitbox, playerHeightForHitbox); // draw player hitbox
         }
         
         drawHealthAndManaBars(g2);// drawing the health and mana bars
@@ -685,6 +737,41 @@ public class GamePanel extends JPanel implements Runnable{
             playerX = 1800;
             playerY = 700;
             setBoundsForMap("traning");
+        } else if (mapName.equals("battle")) {
+            try {
+                monsterSpawn = new MonsterSpawn();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } // initialize monster spawn for Battle map 
+            currentMap = new Battle();
+            mapHeight = currentMap.getImage().getHeight();
+            mapWidth = currentMap.getImage().getWidth();
+            playerX = 1800;
+            playerY = 700;
+            setBoundsForMap("battle");
+        } else if (mapName.equals("boss")) {
+            try {
+                monsterSpawn = new MonsterSpawn();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } // initialize monster spawn for Battle map 
+            for(int i = 0; monsterSpawn.monsterList.size() < 1; i++) {
+                monsterSpawn.monsterList.get(i).setMonsterHp(1000);
+                monsterSpawn.monsterList.get(i).setMagicalMonsterArmor(1000);
+                monsterSpawn.monsterList.get(i).setMagicalMonsterDamage(1000);
+                monsterSpawn.monsterList.get(i).setPhysicalMonsterArmor(1000);
+                monsterSpawn.monsterList.get(i).setPhysicalMosterDamgae(1000);
+            }
+            Random ran = new Random();
+            currentBoss = ran.nextInt(monsterSpawn.monsterList.size()); // get a random boss monster
+            currentMap = new Boss();
+            mapHeight = currentMap.getImage().getHeight();
+            mapWidth = currentMap.getImage().getWidth();
+            playerX = 1800;
+            playerY = 700;
+            setBoundsForMap("boss");
         }
         
 
