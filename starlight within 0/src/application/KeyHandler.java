@@ -1,6 +1,7 @@
     package application;
     import java.awt.event.KeyEvent;
     import java.awt.event.KeyListener;
+import map.PlayerStatsAndInventoryLaunchPage;
 
     public class KeyHandler implements KeyListener {
 
@@ -39,6 +40,10 @@
             }
             else if(code == KeyEvent.VK_ESCAPE){
                 EscButton = true;
+            }
+            else if(code == KeyEvent.VK_M){
+                // This is where you would call the method to show the player stats and inventory
+                PlayerStatsAndInventoryLaunchPage.ShowStatsAndInventory();
             }
         }
 
