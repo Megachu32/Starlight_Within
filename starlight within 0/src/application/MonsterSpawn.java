@@ -71,7 +71,7 @@ public class MonsterSpawn {
                     break;
             }
 
-            monsterList.add(new Monster(ran.nextInt(1000), ran.nextInt((1526 - 200) + 1) + 200, ran.nextInt(5) + 1, 
+            monsterList.add(new Monster(ran.nextInt(3100), ran.nextInt((1526 - 200) + 1) + 200, ran.nextInt(5) + 1, 
                                       "Monster " + (i + 1), ran.nextInt(3), 
                                       ran.nextInt(10) + 1, ran.nextInt(5), 
                                       ran.nextInt(10) + 1, ran.nextInt(5), 
