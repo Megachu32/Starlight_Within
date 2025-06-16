@@ -15,7 +15,6 @@ import map.Loby;
 import map.Maps;
 import map.ShopLaunchPage;
 import map.Traning;
-import map.UpgradeLaunchPage;
 import map.UpgradePanel;
 
 public class GamePanel extends JPanel implements Runnable{
@@ -24,11 +23,16 @@ public class GamePanel extends JPanel implements Runnable{
     // bounde for the game
     ArrayList<Rectangle> bounds = new ArrayList<>(); // List to hold boundaries
     ArrayList<Hitbox> hitboxes = new ArrayList<>(); // List to hold hitboxes
+<<<<<<< HEAD
     UpgradeLaunchPage upgradeLaunchPage = new UpgradeLaunchPage();
     ShopLaunchPage shopLaunchPage = new ShopLaunchPage();
     EscMenuLaunchPage escMenuLaunchPage = new EscMenuLaunchPage();
+=======
+
+>>>>>>> b2c23a729d4462f254b7ad5430fcbaf0012b1a99
 
     UpgradePanel upgradePanel;
+
     
 
     Player player; // calling the player
@@ -58,6 +62,19 @@ public class GamePanel extends JPanel implements Runnable{
     hitboxes.add(new Hitbox(3000, 900, 100, 100, "startGame"));
     hitboxes.add(new Hitbox(3000, 1700, 100, 100, "idk2")); // Example hitbox, adjust as needed
     }
+    public void setHitboxForMap(String mapName) {
+    hitboxes.clear();
+
+    if (mapName.equals("loby")) {
+        hitboxes.add(new Hitbox(500, 900, 100, 100, "shop"));
+        hitboxes.add(new Hitbox(500, 1700, 100, 100, "upgrade"));
+        hitboxes.add(new Hitbox(3000, 900, 100, 100, "idk1"));
+        hitboxes.add(new Hitbox(3000, 1700, 100, 100, "idk2"));
+    } else if (mapName.equals("traning")) {
+        hitboxes.add(new Hitbox(3000, 900, 100, 100, "idk1"));
+        hitboxes.add(new Hitbox(3000, 1700, 100, 100, "idk2"));
+    }
+}
 
     public void setBoundsForMap(String mapName) {
     bounds.clear(); // Remove old bounds
@@ -72,12 +89,7 @@ public class GamePanel extends JPanel implements Runnable{
             // add your specific Training bounds here
         }
     }
-    public void setHitboxForMap(String maName){
-        hitboxes.clear();
-        if (maName.equals("loby")) {
-        } else if (maName.equals("traning")) {
-        }
-    }
+    // Removed duplicate method setHitboxForMap(String maName)
 
 
     final int fps = 60;// fps for the game
@@ -171,6 +183,7 @@ public class GamePanel extends JPanel implements Runnable{
         currentMap = new Loby();
         upgradePanel = new UpgradePanel(window); // initialize upgrade panel
 
+
         layeredPane = window.getLayeredPane();
         upgradePanel.setBounds(0, 0, screenWidth, screenHeight);
         upgradePanel.setOpaque(true); // make sure it's not transparent
@@ -178,6 +191,7 @@ public class GamePanel extends JPanel implements Runnable{
         upgradePanel.setVisible(true);
         // window.add(layeredPane); // add upgrade panel to the window
         // upgradePanel.repaint();
+
 
         // window.remove(upgradePanel); // remove upgrade panel from the window
 
@@ -195,8 +209,10 @@ public class GamePanel extends JPanel implements Runnable{
         this.addKeyListener(keyH);
         this.addMouseListener(mouseH);
         this.setFocusable(true);
+
         this.add(upgradePanel);
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
 
         player = new Player(this, keyH, mouseH);
 
@@ -278,6 +294,7 @@ public class GamePanel extends JPanel implements Runnable{
     }
 
     private void onHitboxTrigger(Hitbox hb) {
+
         switch (hb.id) {
             case "shop":
                 System.out.println("Player entered shop");
@@ -286,11 +303,11 @@ public class GamePanel extends JPanel implements Runnable{
                 break;
             case "upgrade":
                 System.out.println("Player entered upgrade area");
-                // frame.add(upgradePanel); // Show upgrade panel\
-                // sleep(1);
-                upgradeLaunchPage.showPanel();
+                frame.add(upgradePanel); // Show upgrade panel\
+                sleep(1);
                 break;
         }
+
     }
 
     //used for the player to move
@@ -353,7 +370,6 @@ public class GamePanel extends JPanel implements Runnable{
                 playerY -= playerSpeed;
                 direction = "up";
                 isMoving = true;
-                
             }
         }
         if (keyH.down) {
@@ -381,6 +397,7 @@ public class GamePanel extends JPanel implements Runnable{
             }
         }
         if (keyH.space) {
+            visible = true;
             boolean canRoll = canRoll();
             if (canRoll) {
                 rolling = true;
@@ -391,6 +408,8 @@ public class GamePanel extends JPanel implements Runnable{
             }
         }
         if (rolling) {
+            System.out.println("Player entered upgrade area");
+            repaint();
             isRolling = true;
             rollingCounter++;
 
@@ -651,6 +670,7 @@ public class GamePanel extends JPanel implements Runnable{
 
         mapName = newMapName; // update current mapName
 
+
         if (mapName.equals("loby")) {
             currentMap = new Loby();
             mapHeight = currentMap.getImage().getHeight();
@@ -667,10 +687,23 @@ public class GamePanel extends JPanel implements Runnable{
             setBoundsForMap("traning");
         }
         
+
     }
 
     public void CheckCollision() {
+        /* Vince Comment
+         * i believe this function is used by using each monster to call this function. if one of them is true, player takes damage and reset the global invincibility (if there's any)
+         */
+
+
+
     }
+
+    // TODO temp func
+        boolean isColliding(int mx1, int my1, int mx2, int my2, int px1, int py1, int px2, int py2) {
+            return (mx1 < px2 && mx2 > px1 && my1 < py2 && my2 > py1);
+            }
+    // end temp func
 
     private void sleep(int i) {
         // TODO Auto-generated method stub
