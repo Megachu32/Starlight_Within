@@ -87,6 +87,6 @@ public class ShopLaunchPage {
     }
 
     private static void startCooldown() {
-        new Timer(1000, e -> cooldown = false).start(); // 1 second cooldown
+        new Timer(10000, e -> cooldown = false).start(); // 1 second cooldown
     }
 }

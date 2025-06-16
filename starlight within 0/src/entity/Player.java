@@ -19,6 +19,9 @@ public class Player extends Entity{
     int magicalArmor;
     int mana;
     int manaMax;
+    int manaRegen;
+    int hpRegen;
+    int gold;
 
     public Player(GamePanel gp, KeyHandler keyH, MouseHandler mouseH) {
         this.gp = gp;
@@ -27,11 +30,20 @@ public class Player extends Entity{
         this.mana = 50;
         this.manaMax = 100;
         this.hp = 50;
-        this.maxHp = 100; 
+        this.maxHp = 100;
+        this.gold = 0;
     }
 
     public GamePanel getGp() {
         return gp;
+    }
+
+    public int getGold() {
+        return gold;
+    }
+
+    public void setGold(int gold) {
+        this.gold = gold;
     }
 
     public void setGp(GamePanel gp) {
