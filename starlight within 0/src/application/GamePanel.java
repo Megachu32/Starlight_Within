@@ -677,7 +677,19 @@ public class GamePanel extends JPanel implements Runnable{
     }
 
     public void CheckCollision() {
+        /* Vince Comment
+         * i believe this function is used by using each monster to call this function. if one of them is true, player takes damage and reset the global invincibility (if there's any)
+         */
+
+
+
     }
+
+    // TODO temp func
+        boolean isColliding(int mx1, int my1, int mx2, int my2, int px1, int py1, int px2, int py2) {
+            return (mx1 < px2 && mx2 > px1 && my1 < py2 && my2 > py1);
+            }
+    // end temp func
 
     private void sleep(int i) {
         // TODO Auto-generated method stub
