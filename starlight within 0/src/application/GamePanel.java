@@ -15,7 +15,7 @@ import map.Loby;
 import map.Maps;
 import map.ShopLaunchPage;
 import map.Traning;
-import map.UpgradePanel;
+import map.UpgradeLaunchPage;
 
 public class GamePanel extends JPanel implements Runnable{
 
@@ -23,17 +23,11 @@ public class GamePanel extends JPanel implements Runnable{
     // bounde for the game
     ArrayList<Rectangle> bounds = new ArrayList<>(); // List to hold boundaries
     ArrayList<Hitbox> hitboxes = new ArrayList<>(); // List to hold hitboxes
-<<<<<<< HEAD
     UpgradeLaunchPage upgradeLaunchPage = new UpgradeLaunchPage();
     ShopLaunchPage shopLaunchPage = new ShopLaunchPage();
     EscMenuLaunchPage escMenuLaunchPage = new EscMenuLaunchPage();
-=======
 
->>>>>>> b2c23a729d4462f254b7ad5430fcbaf0012b1a99
 
-    UpgradePanel upgradePanel;
-
-    
 
     Player player; // calling the player
 
@@ -146,6 +140,8 @@ public class GamePanel extends JPanel implements Runnable{
 
     //other variables
     BufferedImage punchingBag;
+    BufferedImage redStore;
+    BufferedImage blueStore;
     int bagX, bagY; // position of punching bag
     JLayeredPane layeredPane;
 
@@ -181,14 +177,9 @@ public class GamePanel extends JPanel implements Runnable{
         screenHeightTemp = screenHeight;
         // calling currentMap
         currentMap = new Loby();
-        upgradePanel = new UpgradePanel(window); // initialize upgrade panel
 
 
         layeredPane = window.getLayeredPane();
-        upgradePanel.setBounds(0, 0, screenWidth, screenHeight);
-        upgradePanel.setOpaque(true); // make sure it's not transparent
-        layeredPane.add(upgradePanel, JLayeredPane.PALETTE_LAYER); // or POPUP_LAYER
-        upgradePanel.setVisible(true);
         // window.add(layeredPane); // add upgrade panel to the window
         // upgradePanel.repaint();
 
@@ -199,6 +190,7 @@ public class GamePanel extends JPanel implements Runnable{
         // calling music player
         musik = new Music();
         // load music
+        musik.stopMusic();
         musik.playMusic("/musik/lobyMusic.wav");
         // getingy the map size
         mapHeight = currentMap.getImage().getHeight();
@@ -210,7 +202,6 @@ public class GamePanel extends JPanel implements Runnable{
         this.addMouseListener(mouseH);
         this.setFocusable(true);
 
-        this.add(upgradePanel);
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 
@@ -299,12 +290,10 @@ public class GamePanel extends JPanel implements Runnable{
             case "shop":
                 System.out.println("Player entered shop");
                 ShopLaunchPage.showPanel(); // Show shop panel
-                // sleep(1);
                 break;
             case "upgrade":
                 System.out.println("Player entered upgrade area");
-                frame.add(upgradePanel); // Show upgrade panel\
-                sleep(1);
+                UpgradeLaunchPage.showPanel(); // Show upgrade panel
                 break;
         }
 
@@ -397,7 +386,6 @@ public class GamePanel extends JPanel implements Runnable{
             }
         }
         if (keyH.space) {
-            visible = true;
             boolean canRoll = canRoll();
             if (canRoll) {
                 rolling = true;
@@ -445,6 +433,28 @@ public class GamePanel extends JPanel implements Runnable{
             keyH.EscButton = false; // Reset the Esc button state
         }
     }
+
+    // public Image RedStoreImage(){
+    //     try{
+    //         redStore = ImageIO.read(getClass().getResource("/samll things/redStore.png"));
+    //     }
+    //     catch(IOException e){
+    //         e.printStackTrace();
+    //     }
+    //     return redStore;
+    // }
+
+    // public Image BlueStoreImage(){
+    //     try{
+    //         blueStore = ImageIO.read(getClass().getResource("/samll things/BlueStore.png"));
+    //     }
+    //     catch(IOException e){
+    //         e.printStackTrace();
+    //     }
+    //     return blueStore;
+    // }
+    ImageIcon redstore = new ImageIcon(getClass().getResource("/samll things/redStore.png"));
+    ImageIcon bluestore = new ImageIcon(getClass().getResource("/samll things/BlueStore.png"));
 
     // for actually outputting the image
     @Override
@@ -583,7 +593,15 @@ public class GamePanel extends JPanel implements Runnable{
         g2.setColor(new Color(0, 255, 0, 100)); // semi-transparent green for hitboxes
 
         for (Hitbox hitbox : hitboxes) {
-            g2.fillRect(hitbox.x - cameraX, hitbox.y - cameraY, hitbox.width, hitbox.height);
+            if("shop".equals(hitbox.id)){
+                g.drawImage(redstore.getImage(), hitbox.x - 200 - cameraX, hitbox.y - 300 - cameraY, this);
+            }
+            else if("upgrade".equals(hitbox.id)){
+                g.drawImage(bluestore.getImage(), hitbox.x - cameraX, hitbox.y - 500 - cameraY, this);
+            }
+            else{
+                g2.fillRect(hitbox.x - cameraX, hitbox.y - cameraY, hitbox.width, hitbox.height);
+            }
         }
 
         g2.dispose();

@@ -33,7 +33,7 @@ public class PlayerStatsAndInventoryLaunchPage {
 
         // Title
         JLabel title = new JLabel("Character Stats");
-        title.setForeground(Color.WHITE);
+        title.setForeground(Color.BLACK);
         title.setFont(new Font("Arial", Font.BOLD, 20));
         title.setHorizontalAlignment(JLabel.CENTER);
         StatsFrame.add(title, BorderLayout.NORTH);
@@ -72,7 +72,7 @@ public class PlayerStatsAndInventoryLaunchPage {
         hpLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         statsPanel.add(hpLabel);
 
-        JLabel LevelLabel = new JLabel("Defense: " + player.getLevel());
+        JLabel LevelLabel = new JLabel("lvl: " + player.getLevel());
         hpLabel.setForeground(Color.WHITE);
         hpLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         statsPanel.add(LevelLabel);
@@ -94,6 +94,8 @@ public class PlayerStatsAndInventoryLaunchPage {
 
         StatsFrame.add(statsPanel, BorderLayout.SOUTH);
 
+        StatsFrame.pack(); // Optional: fits components
+        StatsFrame.setLocationRelativeTo(null); // Centers the frame
         StatsFrame.setVisible(true);
     }
 
