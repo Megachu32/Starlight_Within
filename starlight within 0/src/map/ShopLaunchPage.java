@@ -1,10 +1,9 @@
 package map;
 
-import javax.swing.*;
-
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.*;
+import javax.swing.*;
 
 public class ShopLaunchPage {
     private static JFrame ShopFrame = null;
@@ -30,6 +29,18 @@ public class ShopLaunchPage {
                     startCooldown(); // Delay before next open
                 }
             });
+
+            JLabel titleShop = new JLabel ("what do you want to buy"); // label for the panel
+            titleShop.setBounds(120,50,300,30); // set bound for the label (x, y, width, height)
+            titleShop.setForeground(Color.WHITE); // set the text color to white
+            titleShop.setFont(new Font("Arial", Font.BOLD, 18)); // set the font for the label
+            ShopFrame.add(titleShop); // add the label to the frame
+
+            JLabel infoShop = new JLabel("", SwingConstants.CENTER); // label for the info
+            infoShop.setBounds(50,startY + (gap * 2) + 50, 300, 30); // set bounds for the label (x, y, width, height)
+            infoShop.setForeground(Color.WHITE); // set the text color to white
+            infoShop.setFont(new Font("Arial", Font.PLAIN, 14)); // set the font for the label
+            ShopFrame.add(infoShop); // add the label to the frame
 
             JButton shopButton1 = new JButton("Upgrade Sword");
             JButton shopButton2 = new JButton("Upgrade Shield");
@@ -57,12 +68,15 @@ public class ShopLaunchPage {
 
             shopButton1.addActionListener(e -> {
                 System.out.println("Sword upgraded!");
+                infoShop.setText("Sword upgraded!"); // Update info label
             });
             shopButton2.addActionListener(e -> {
                 System.out.println("shiled upgraded!");
+                infoShop.setText("Shield upgraded!"); // Update info label
             });
             shopButton3.addActionListener(e -> {
                 System.out.println("armor upgraded!");
+                infoShop.setText("Armor upgraded!"); // Update info label
             });
 
             ShopFrame.add(shopButton1);

@@ -1,10 +1,9 @@
 package map;
 
-import javax.swing.*;
-
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.*;
+import javax.swing.*;
 
 public class UpgradeLaunchPage {
 
@@ -33,6 +32,18 @@ public class UpgradeLaunchPage {
             }
         });
 
+        JLabel titleUpgrade = new JLabel ("Upgrade Options"); // label for the panel
+        titleUpgrade.setBounds(120,50,300,30); // set bound for the label (x, y, width, height)
+        titleUpgrade.setForeground(Color.WHITE); // set the text color to white
+        titleUpgrade.setFont(new Font("Arial", Font.BOLD, 18)); // set the font for the label
+        frame.add(titleUpgrade); // add the label to the frame
+
+        JLabel infoUpgrade = new JLabel("", SwingConstants.CENTER); // label for the info
+        infoUpgrade.setBounds(50,startY + (gap * 2) + 50, 300, 30); // set bounds for the label (x, y, width, height)
+        infoUpgrade.setForeground(Color.WHITE); // set the text color to white
+        infoUpgrade.setFont(new Font("Arial", Font.PLAIN, 14)); // set the font for the label
+        frame.add(infoUpgrade); // add the label to the frame
+        
         JButton upgradeButtonspeed = new JButton("Speed");
         JButton upgradeButtonHp = new JButton("hp");
         JButton upgradeButtonMana = new JButton("mana");
@@ -59,12 +70,15 @@ public class UpgradeLaunchPage {
 
         upgradeButtonspeed.addActionListener(e -> {
             System.out.println("Speed upgraded!");
+            infoUpgrade.setText("Speed upgraded!"); // Update the info label with the upgrade message
         });
         upgradeButtonHp.addActionListener(e -> {
             System.out.println("hp upgraded!");
+            infoUpgrade.setText("hp upgraded!"); // Update the info label with the upgrade message
         });
         upgradeButtonMana.addActionListener(e -> {
             System.out.println("mana upgraded!");
+            infoUpgrade.setText("mana upgraded!"); // Update the info label with the upgrade message
         });
 
         frame.add(upgradeButtonspeed);

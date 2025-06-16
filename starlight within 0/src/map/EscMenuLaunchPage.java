@@ -4,8 +4,6 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import javax.swing.Timer;
-
 import javax.swing.JButton;
 import javax.swing.JFrame;
 
@@ -13,12 +11,14 @@ public class EscMenuLaunchPage {
     private static JFrame Escframe = null;
     static int startY = 100;
     static int gap = 60;
+    boolean exit = false;
 
     public static void showPanel() {
     if ((Escframe == null || !Escframe.isDisplayable())) { // check if the frame is noll or displayble or in cooldown
         // If the frame is null or not displayable, and cooldown is false, create a new frame
 
-        Escframe = new JFrame("menu");// frame title
+        Escframe = new JFrame();
+        Escframe.setUndecorated(true); // removes title bar
         Escframe.setSize(400, 400);// frame size
         Escframe.setLayout(null);// frame layour wich is null wich means we can set bounds for each component
         Escframe.setLocationRelativeTo(null);
@@ -58,12 +58,14 @@ public class EscMenuLaunchPage {
 
         EscMenuButton1.addActionListener(e -> {
             System.out.println("resumed!");
+            Escframe.dispose(); // close the frame manually
         });
         EscMenuButton2.addActionListener(e -> {
             System.out.println("settings opened!");
         });
         EscMenuButton3.addActionListener(e -> {
             System.out.println("exited!");
+            System.exit(0); // Exits the application
         });
 
         Escframe.add(EscMenuButton1);

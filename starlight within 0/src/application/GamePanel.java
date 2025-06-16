@@ -10,7 +10,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import javax.imageio.ImageIO;
 import javax.swing.*;
-
 import map.EscMenuLaunchPage;
 import map.Loby;
 import map.Maps;
@@ -197,6 +196,7 @@ public class GamePanel extends JPanel implements Runnable{
         this.addMouseListener(mouseH);
         this.setFocusable(true);
         this.add(upgradePanel);
+        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         player = new Player(this, keyH, mouseH);
 
@@ -246,6 +246,7 @@ public class GamePanel extends JPanel implements Runnable{
     public void startGameThread() {
         gameThread = new Thread(this);
         gameThread.start();
+        gameThread.setDaemon(true);
     }
     // render interval
     @Override
