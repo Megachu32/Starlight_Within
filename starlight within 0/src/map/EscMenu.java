@@ -65,6 +65,7 @@ public class EscMenu extends JPanel{
         exitButton.addActionListener(e -> {
             // Logic to exit the game
             System.out.println("Game exited!");
+            
         });
         
     }

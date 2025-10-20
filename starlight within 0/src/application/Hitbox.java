@@ -14,5 +14,6 @@ public class Hitbox {
         this.width = width;
         this.height = height;
         this.id = id;
+        rect = new Rectangle(x, y, width, height);
     }
 }

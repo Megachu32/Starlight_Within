@@ -138,8 +138,8 @@ public class MainMenu {
     // Button actions
     startButton.addActionListener(e -> {
         try {
-            startGame();
             musik.stopMusic();
+            startGame();
         } catch (Exception ex) {
             ex.printStackTrace();
         }

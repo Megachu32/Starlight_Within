@@ -8,11 +8,20 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Random;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
+
+import map.Battle;
+import map.Boss;
+import map.EscMenuLaunchPage;
 import map.Loby;
 import map.Maps;
+import map.PlayerStatsAndInventoryLaunchPage;
+import map.ShopLaunchPage;
 import map.Traning;
+import map.UpgradeLaunchPage;
 import map.UpgradePanel;
 
 public class GamePanel extends JPanel implements Runnable{
@@ -22,10 +31,11 @@ public class GamePanel extends JPanel implements Runnable{
     ArrayList<Rectangle> bounds = new ArrayList<>(); // List to hold boundaries
     ArrayList<Hitbox> hitboxes = new ArrayList<>(); // List to hold hitboxes
 
-    UpgradePanel upgradePanel = new UpgradePanel(null);
+    UpgradeLaunchPage upgradeLaunchPage = new UpgradeLaunchPage();
+    ShopLaunchPage shopLaunchPage = new ShopLaunchPage();
+    EscMenuLaunchPage escMenuLaunchPage = new EscMenuLaunchPage();
 
-    boolean visible = false; // for the upgrade panel visibility
-    
+    UpgradePanel upgradePanel;
 
     Player player; // calling the player
 
@@ -50,8 +60,8 @@ public class GamePanel extends JPanel implements Runnable{
     }
     {
     hitboxes.add(new Hitbox(500, 900, 100, 100, "shop"));
-    hitboxes.add(new Hitbox(500, 1700, 100, 100, "upgrade"));
-    hitboxes.add(new Hitbox(3000, 900, 100, 100, "idk1"));
+    hitboxes.add(new Hitbox(500, 1500, 100, 100, "upgrade"));
+    hitboxes.add(new Hitbox(3000, 900, 100, 100, "startGame"));
     hitboxes.add(new Hitbox(3000, 1700, 100, 100, "idk2")); // Example hitbox, adjust as needed
     }
     public void setHitboxForMap(String mapName) {
@@ -59,8 +69,8 @@ public class GamePanel extends JPanel implements Runnable{
 
     if (mapName.equals("loby")) {
         hitboxes.add(new Hitbox(500, 900, 100, 100, "shop"));
-        hitboxes.add(new Hitbox(500, 1700, 100, 100, "upgrade"));
-        hitboxes.add(new Hitbox(3000, 900, 100, 100, "idk1"));
+        hitboxes.add(new Hitbox(500, 1500, 100, 100, "upgrade"));
+        hitboxes.add(new Hitbox(3000, 900, 100, 100, "startGame"));
         hitboxes.add(new Hitbox(3000, 1700, 100, 100, "idk2"));
     } else if (mapName.equals("traning")) {
         hitboxes.add(new Hitbox(3000, 900, 100, 100, "idk1"));
@@ -70,16 +80,32 @@ public class GamePanel extends JPanel implements Runnable{
 
     public void setBoundsForMap(String mapName) {
     bounds.clear(); // Remove old bounds
+    hitboxes.clear(); // Remove old hitboxes
 
         if (mapName.equals("loby")) {
             bounds.add(new Rectangle(0, 500, 10000, 5));
             bounds.add(new Rectangle(0, 1850, 10000, 5));
             // add other Loby bounds here
+            hitboxes.add(new Hitbox(500, 900, 100, 100, "shop"));
+            hitboxes.add(new Hitbox(500, 1500, 100, 100, "upgrade"));
+            hitboxes.add(new Hitbox(3000, 900, 100, 100, "startGame"));
+            hitboxes.add(new Hitbox(3000, 1700, 100, 100, "idk2"));
+            
         } else if (mapName.equals("traning")) {
             bounds.add(new Rectangle(0, 600, 10000, 5));
             bounds.add(new Rectangle(0, 1850, 10000, 5));
             // add your specific Training bounds here
         }
+
+        // if (mapName.equals("loby")) {
+        //     hitboxes.add(new Hitbox(500, 900, 100, 100, "shop"));
+        //     hitboxes.add(new Hitbox(500, 1700, 100, 100, "upgrade"));
+        //     hitboxes.add(new Hitbox(3000, 900, 100, 100, "idk1"));
+        //     hitboxes.add(new Hitbox(3000, 1700, 100, 100, "idk2"));
+        // } else if (mapName.equals("traning")) {
+
+        // }
+        
     }
     // Removed duplicate method setHitboxForMap(String maName)
 
@@ -104,13 +130,22 @@ public class GamePanel extends JPanel implements Runnable{
     boolean isRolling = false;
     boolean rolling = false;
     boolean isAttacking = false; // for the attack animation
+    boolean isUsingMagic = false; // for the attack animation
+
     int rollingCounter = 0;
     int attackCounter = 0;
     final int rollDuration = 36; // How many frames the roll lasts (same as roll animation frames)
     final int attackDuration = 12; // How many frames the attack lasts (same as attack animation frames)
     int rollDelay = 0; // How long to wait before rolling again
-    Instant timeNow = Instant.now();// current time for calculating rolling delay
-    Instant lastRollTime = Instant  .now(); // when you last rolled
+
+    Instant lastRollTime = Instant.now(); // when you last rolled
+    Instant lastMagicRegen = Instant.now();// current time for calculating rolling delay
+    Instant lastHealthRegen = Instant.now();// current time for calculating rolling delay
+    Instant lastUseMagic = Instant.now();// current time for calculating rolling delay
+    
+
+    int magicCounter = 0; // counter for magic
+    final int magicDuration = 5; // How many frames the magic lasts (same as magic animation frames)
 
     KeyHandler keyH = new KeyHandler(); // calling keybaord
     MouseHandler mouseH = new MouseHandler(); // calling mouse
@@ -120,6 +155,10 @@ public class GamePanel extends JPanel implements Runnable{
     final int playerSpeed = 7;
     int playerX = 1800;
     int playerY = 700;
+    int playerXHitbox = 0; // player hitbox x position
+    int playerYHitbox = 0; // player hitbox y position
+    int playerWidthForHitbox = 0; // player width
+    int playerHeightForHitbox = 0; // player height
 
     // screen size
     int screenWidthTemp;
@@ -134,10 +173,22 @@ public class GamePanel extends JPanel implements Runnable{
 
     //other variables
     BufferedImage punchingBag;
+    BufferedImage redStore;
+    BufferedImage blueStore;
     int bagX, bagY; // position of punching bag
+    JLayeredPane layeredPane;
 
     //monsters variable
-    ArrayList<Monster> monsters = new ArrayList<>(); // List to hold monsters
+    MonsterSpawn monsterSpawn; // calling the monster spawn
+    int monsterMoveDelay = 0; // delay for monster movement
+    final int monsterMoveTrashold = 10; // counter for monster movement
+    int currentBoss = 0; // current boss id
+    Rectangle monsterRect;
+    Monster currentMonster; // current monster
+
+    Boolean toggleHitbox = false;
+
+    JFrame frame;
 
     public boolean canRoll() {
         //TODO connect to roll method
@@ -147,6 +198,48 @@ public class GamePanel extends JPanel implements Runnable{
         if (timeElapsed.getSeconds() >= 1) {
             lastRollTime = now; // update to the new roll time
             keyH.space = true; // reset the space key
+            return true;
+        }
+        keyH.space = false; // reset the space key
+        return false;
+    }
+
+    public boolean canUseMagic(){
+        //TODO connect to roll method
+        Instant now = Instant.now();
+        Duration timeElapsed = Duration.between(lastUseMagic, now);
+
+        if (timeElapsed.getSeconds() >= 1) {
+            lastUseMagic = now; // update to the new roll time
+            keyH.magic = true; // reset the space key
+            return true;
+        }
+        keyH.space = false; // reset the space key
+        return false;
+    }
+
+    public boolean canMagicRegen() {
+        //TODO connect to roll method
+        Instant now = Instant.now();
+        Duration timeElapsed = Duration.between(lastMagicRegen, now);
+
+        if (timeElapsed.getSeconds() >= 4) {
+            lastMagicRegen = now; // update to the new roll time
+            // keyH.space = true; // reset the space key
+            return true;
+        }
+        keyH.space = false; // reset the space key
+        return false;
+    }
+
+    public boolean canHealthRegen() {
+        //TODO connect to roll method
+        Instant now = Instant.now();
+        Duration timeElapsed = Duration.between(lastHealthRegen, now);
+
+        if (timeElapsed.getSeconds() >= 5) {
+            lastHealthRegen = now; // update to the new roll time
+            // keyH.space = true; // reset the space key
             return true;
         }
         keyH.space = false; // reset the space key
@@ -163,19 +256,19 @@ public class GamePanel extends JPanel implements Runnable{
         // calling currentMap
         currentMap = new Loby();
 
-        JFrame frame = window; // Initialize the frame variable
-        JLayeredPane layeredPane = frame.getLayeredPane();
-        UpgradePanel upgradePanel = new UpgradePanel(frame);
-        upgradePanel.setBounds(0,0, 400, 500); // full size
-        layeredPane.add(upgradePanel, JLayeredPane.POPUP_LAYER);
-        upgradePanel.setVisible(visible); // Initially hide the upgrade panel
+
+        layeredPane = window.getLayeredPane();
+        // window.add(layeredPane); // add upgrade panel to the window
+        // upgradePanel.repaint();
 
 
+        // window.remove(upgradePanel); // remove upgrade panel from the window
 
-
+        // sleep(1000);
         // calling music player
         musik = new Music();
         // load music
+        musik.stopMusic();
         musik.playMusic("/musik/lobyMusic.wav");
         // getingy the map size
         mapHeight = currentMap.getImage().getHeight();
@@ -186,11 +279,15 @@ public class GamePanel extends JPanel implements Runnable{
         this.addKeyListener(keyH);
         this.addMouseListener(mouseH);
         this.setFocusable(true);
-        System.out.println("how many time dot game panel run");
+
+        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
 
         player = new Player(this, keyH, mouseH);
 
+        frame = window; // store the JFrame reference
         loadSprites();
+        // getFrame(window);
     }
 
     private void loadSprites() throws IOException {
@@ -199,12 +296,13 @@ public class GamePanel extends JPanel implements Runnable{
         BufferedImage rollSheet = ImageIO.read(getClass().getResource("/resource/Colour1/NoOutline/120x80_PNGSheets/_Roll.png"));
         BufferedImage attackSheet = ImageIO.read(getClass().getResource("/resource/Colour1/NoOutline/120x80_PNGSheets/_Attack.png"));
         punchingBag = ImageIO.read(getClass().getResource("/Samll things/Untitled24_20250525142430.png"));
+        monsterSpawn = new MonsterSpawn(); // initialize monster spawn
 
         if (idleSheet == null || runSheet == null || rollSheet == null || attackSheet == null || punchingBag == null) {
             System.out.println("Error loading images");
             return;
         }
-
+ 
         frameWidth = idleSheet.getWidth() / 10;
         frameHeight = idleSheet.getHeight();
 
@@ -233,6 +331,7 @@ public class GamePanel extends JPanel implements Runnable{
     public void startGameThread() {
         gameThread = new Thread(this);
         gameThread.start();
+        gameThread.setDaemon(true);
     }
     // render interval
     @Override
@@ -263,26 +362,20 @@ public class GamePanel extends JPanel implements Runnable{
     return false;
     }
 
-    private void onHitboxTrigger(Rectangle hitbox) {
-    // Identify which hitbox and do something
-    System.out.println("Player triggered hitbox at: " + hitbox);
-
-    // Example: show message, spawn monster, change map, etc.
-    }
     private void onHitboxTrigger(Hitbox hb) {
-    switch (hb.id) {
-        case "shop":
-            System.out.println("Player entered shop");
-            break;
-        case "upgrade":
-            visible = true;// Show the upgrade panel
-            System.out.println("Player entered upgrade area");
-            repaint();
-            break;
-         // Show the upgrade panel
-    }
-}
 
+        switch (hb.id) {
+            case "shop":
+                // System.out.println("Player entered shop");
+                ShopLaunchPage.showPanel(player); // Show shop panel
+                break;
+            case "upgrade":
+                // System.out.println("Player entered upgrade area");
+                UpgradeLaunchPage.showPanel(player); // Show upgrade panel
+                break;
+        }
+
+    }
 
     //used for the player to move
     public void update() {
@@ -304,18 +397,35 @@ public class GamePanel extends JPanel implements Runnable{
         } else if (mapName.equals("traning") && playerX == mapWidth - tileSize) {
             mapName = "loby";
             mapTeleport(mapName);
+        } else if (mapName.equals("loby") && playerX == mapWidth - tileSize) {
+            mapName = "battle";
+            mapTeleport(mapName);
+        } else if (mapName.equals("battle") && playerY == 546) {
+            mapName = "boss";
+            mapTeleport(mapName);
+        } else if (mapName.equals("boss") && playerX == 0) {
+            mapName = "battle";
+            mapTeleport(mapName);
+        } else if (mapName.equals("battle") && playerX == 0) {
+            mapName = "loby";
+            mapTeleport(mapName);
         }
     
         Duration timeSinceLastRoll = Duration.between(lastRollTime, Instant.now());
     
-        Rectangle Rect = new Rectangle(playerX, playerY, tileSize, tileSize);
+        Rectangle Rect = new Rectangle(playerXHitbox, playerYHitbox, playerWidthForHitbox, playerHeightForHitbox);
 
-        Rectangle playerRect = new Rectangle(playerX, playerY, tileSize, tileSize);
+        Rectangle playerRect = new Rectangle(playerXHitbox, playerYHitbox, playerWidthForHitbox, playerHeightForHitbox);
 
         // Defensive version of hitbox collision check
         for (Hitbox hb : hitboxes) {
-            if (hb == null || hb.rect == null) {
+            if (hb == null) {
                 // Skip if hitbox or its rectangle is null (avoid crashes)
+                System.out.println("Hitbox is null, skipping collision check.");
+                continue;
+            }
+            if(hb.rect == null){
+                // System.out.println("Hitbox rectangle is null, skipping collision check.");
                 continue;
             }
             
@@ -331,6 +441,7 @@ public class GamePanel extends JPanel implements Runnable{
             }
         }
 
+        // System.out.println(playerX + " " + playerY);
 
         if (keyH.up) {
             Rect.y -= playerSpeed;
@@ -338,6 +449,7 @@ public class GamePanel extends JPanel implements Runnable{
                 playerY -= playerSpeed;
                 direction = "up";
                 isMoving = true;
+                // System.out.println("Player moved up to: " + playerY);
             }
         }
         if (keyH.down) {
@@ -354,6 +466,7 @@ public class GamePanel extends JPanel implements Runnable{
                 playerX -= playerSpeed;
                 direction = "left";
                 isMoving = true;
+                // System.out.println("Player moved left to: " + playerX);
             }
         }
         if (keyH.right) {
@@ -365,7 +478,6 @@ public class GamePanel extends JPanel implements Runnable{
             }
         }
         if (keyH.space) {
-            visible = true;
             boolean canRoll = canRoll();
             if (canRoll) {
                 rolling = true;
@@ -394,6 +506,24 @@ public class GamePanel extends JPanel implements Runnable{
 
             return; // Skip rest of update() while rolling
         }
+        if(keyH.magic) {
+            isUsingMagic = true; // Set magic usage flag
+            player.setPyhsicalDamage(player.getPyhsicalDamage() + 10); // Increase physical damage for magic
+        } 
+        if(isUsingMagic && (player.getMana() > 0)) {
+            // Check if player has enough mana to use magic
+            if (canUseMagic()) {
+                player.setMana(player.getMana() - 10); // Use magic
+                System.out.println("Player used magic, remaining mana: " + player.getMana());
+            }
+        }else {
+            isUsingMagic = false; // Reset magic usage flag
+            player.setPyhsicalDamage(player.getPyhsicalDamage() - 10); // Increase physical damage for magic
+            keyH.magic = false; // Reset magic key state
+        }
+        if(keyH.hitbox) {
+            toggleHitbox = !toggleHitbox; // toggle hitbox visibility
+        }
 
         if (mouseH.attack) { // left click mouse button
             isMoving = false;
@@ -405,7 +535,50 @@ public class GamePanel extends JPanel implements Runnable{
                 attackCounter = 0;
             }
         }
+        if(keyH.EscButton){
+            escMenuLaunchPage.showPanel(); // Show the Esc menu
+            keyH.EscButton = false; // Reset the Esc button state
+        }
+        
+        if(canMagicRegen() && player.getMana() < player.getManaMax()) {
+            player.setMana((player.getMana() + 10 > player.getManaMax()) ? player.getManaMax() : player.getMana() + 10); // Regenerate magic
+        }
+        if(canHealthRegen() && player.getHp() < player.getMaxHp()) {
+            player.setHp((player.getHp() + 10 > player.getMaxHp()) ? player.getMaxHp() : player.getHp() + 10); // Regenerate health
+        }
+        
+        if(isAttacking) {
+            if(monsterRect == null) return; // Skip if monsterRect is null
+            if(playerRect.intersects(monsterRect) &&  currentMonster != null) {
+                System.out.println("Current monster: " + currentMonster.getNamaMoster());
+                System.out.println("monster hp before:"+ currentMonster.getMonsterHp());
+                currentMonster.setMonsterHp(currentMonster.getMonsterHp() - player.getPyhsicalDamage()); // Reduce monster health
+                System.out.println("monster hp after:"+ currentMonster.getMonsterHp());
+            } // draw player hitbox
+        }
     }
+
+    // public Image RedStoreImage(){
+    //     try{
+    //         redStore = ImageIO.read(getClass().getResource("/samll things/redStore.png"));
+    //     }
+    //     catch(IOException e){
+    //         e.printStackTrace();
+    //     }
+    //     return redStore;
+    // }
+
+    // public Image BlueStoreImage(){
+    //     try{
+    //         blueStore = ImageIO.read(getClass().getResource("/samll things/BlueStore.png"));
+    //     }
+    //     catch(IOException e){
+    //         e.printStackTrace();
+    //     }
+    //     return blueStore;
+    // }
+    ImageIcon redstore = new ImageIcon(getClass().getResource("/samll things/redStore.png"));
+    ImageIcon bluestore = new ImageIcon(getClass().getResource("/samll things/BlueStore.png"));
 
     // for actually outputting the image
     @Override
@@ -441,6 +614,10 @@ public class GamePanel extends JPanel implements Runnable{
         if(currentMap instanceof Traning) {
             if (punchingBag != null) {
                 g2.drawImage(punchingBag, drawBagX, drawBagY, 250, 250, this);
+                if(toggleHitbox) {
+                    g2.setColor(Color.RED);
+                    g2.drawRect(drawBagX, drawBagY, punchingBag.getWidth(), punchingBag.getHeight());
+                }
             }
         }
 
@@ -462,20 +639,168 @@ public class GamePanel extends JPanel implements Runnable{
         // drawing the player
         int playerDrawX = playerX - cameraX;
         int playerDrawY = playerY - cameraY;
+        playerXHitbox = playerX; // update player hitbox x position
+        playerYHitbox = playerY + 120; // update player hitbox y position
+        playerWidthForHitbox = tileSize; // update player width
+        playerHeightForHitbox = tileSize - 100; // update player height
+
+        if(currentMap instanceof Battle) {
+            // System.out.println("runing monster spawn");a
+            for (int m = 0; m < monsterSpawn.monsterList.size(); m++) {
+                if(monsterSpawn.monsterList.get(m).getMonsterHp() <= 0) {
+                    System.out.println("Gold: " + player.getGold());
+                    player.setGold(0);
+                    System.out.println("Gold now: " + player.getGold());
+                    monsterSpawn.monsterList.remove(m); // remove dead monsters
+                    continue; // skip if monster is null
+                }
+                Monster monster = monsterSpawn.monsterList.get(m);
+                BufferedImage[] framesMonsters = monster.getFrame();
+                currentMonster = monster; // set the current monster
+                monsterRect = new Rectangle(monster.getX(), monster.getY(), tileSize / 3, tileSize / 3);
+                if(monster.getY() < 800){
+                    monster.setY(800); // prevent monster from going out of bounds
+                }
+                if(monster.getY() > 1500){
+                    monster.setY(1500); // prevent monster from going out of bounds
+                }
+                if(monster.getX() < 100){
+                    monster.setX(100); // prevent monster from going out of bounds
+                }
+                if(monster.getX() > 3100){
+                    monster.setX(3100); // prevent monster from going out of bounds
+                }
+
+                if (monster.getImage() != null) {
+                    monsterSpawn.moveMonsters(m);
+                    g2.drawImage(
+                        framesMonsters[currentFrame % framesMonsters.length],
+                        monster.getX() - cameraX,
+                        monster.getY() - cameraY,
+                        tileSize / 3,
+                        tileSize / 3,
+                        null
+                    );
+
+                    // --- Calculate distance ---
+                    int dx = playerX - monster.getX();
+                    int dy = playerY - monster.getY();
+                    double distance = Math.sqrt(dx * dx + dy * dy);
+
+                    // --- Start chasing if close enough ---
+                    if (distance < 200) {
+                        // System.out.println("distance: " + distance);
+                        monsterMoveDelay++;
+                        if (monsterMoveDelay >= monsterMoveTrashold) {
+                            monsterMoveDelay = 0; // reset the delay counter
+                                
+                            // Update monster position towards player
+                            if (monster.getX() < playerX) {
+                                monster.setX((int) (monster.getX() + monster.getSpeed()));
+                            } else if (monster.getX() > playerX) {
+                                monster.setX((int) (monster.getX() - monster.getSpeed()));
+                            }
+
+                            if (monster.getY() < playerY + 120) {
+                                monster.setY((int) (monster.getY() + monster.getSpeed()));
+                            } else if (monster.getY() > playerY + 120) {
+                                monster.setY((int) (monster.getY() - monster.getSpeed()));
+                            }
+
+                            // System.out.println("Monster " + monster.getNamaMoster() + " is chasing the player.");
+                            // System.out.println("Monster position: (" + monster.getX() + ", " + monster.getY() + ")");
+                        } else {
+                            continue; // skip this iteration if not time to move
+                        }
+                    }
+                }
+                if(toggleHitbox){ // toggle visible hitbox
+                    g2.setColor(Color.GREEN);
+                    g2.drawRect(monster.getX() - cameraX, monster.getY() - cameraY, tileSize / 3, tileSize / 3);
+                }
+            }
+        }
+
+        if(currentMap instanceof Boss) {
+            // System.out.println("runing monster spawn");
+            Monster monster = monsterSpawn.monsterList.get(currentBoss); // assuming only one boss monster
+            if(monster.getMonsterHp() <= 0){
+                return;
+            }
+                BufferedImage[] framesMonsters = monster.getFrame();
+                //TODO add boss monster movement logic                                      
+                if (monster.getImage() != null) {
+                    g2.drawImage(
+                        framesMonsters[currentFrame % framesMonsters.length],
+                        monster.getX() - cameraX,
+                        monster.getY() - cameraY,
+                        tileSize / 2,
+                        tileSize / 2,
+                        null
+                    );
+                    monsterRect = new Rectangle(monster.getX(), monster.getY(), tileSize / 3, tileSize / 3);
+                    int dx = playerX - monster.getX();
+                    int dy = playerY - monster.getY();
+                    double distance = Math.sqrt(dx * dx + dy * dy);
+
+                    // --- Start chasing if close enough ---
+                    if (distance < 200) {
+                        // System.out.println("distance: " + distance);
+                        monsterMoveDelay++;
+                        if (monsterMoveDelay >= monsterMoveTrashold) {
+                            monsterMoveDelay = 0; // reset the delay counter
+                                
+                            // Update monster position towards player
+                            if (monster.getX() < playerX) {
+                                monster.setX((int) (monster.getX() + monster.getSpeed()));
+                            } else if (monster.getX() > playerX) {
+                                monster.setX((int) (monster.getX() - monster.getSpeed()));
+                            }
+
+                            if (monster.getY() < playerY + 120) {
+                                monster.setY((int) (monster.getY() + monster.getSpeed()));
+                            } else if (monster.getY() > playerY + 120) {
+                                monster.setY((int) (monster.getY() - monster.getSpeed()));
+                            }
+
+                            // System.out.println("Monster " + monster.getNamaMoster() + " is chasing the player.");
+                            // System.out.println("Monster position: (" + monster.getX() + ", " + monster.getY() + ")");
+                        } 
+                    }
+                }
+                if(toggleHitbox){ // toggle visible hitbox
+                    g2.setColor(Color.GREEN);
+                    g2.drawRect(monster.getX() - cameraX, monster.getY() - cameraY, tileSize / 2, tileSize / 2);
+                }
+        }
 
         g2.drawImage(spriteToDraw,playerDrawX,playerDrawY, tileSize, tileSize, null);
+        if(toggleHitbox){
+            // playerDrawY = (playerY + 150) - cameraY;
+            g2.setColor(Color.BLUE);
+            // g2.fillRect(playerX, playerY, tileSize, tileSize); // draw player hitbox outline
+            g2.drawRect(playerXHitbox - cameraX, playerYHitbox - cameraY, playerWidthForHitbox, playerHeightForHitbox); // draw player hitbox
+        }
         
-        drawHealthAndManaBars(g2);// drawing the health and mana bars
-
+        
         g2.setColor(Color.RED);
         for (Rectangle rect : bounds) {
             g2.drawRect(rect.x - cameraX, rect.y - cameraY, rect.width, rect.height);
         }
         g2.setColor(new Color(0, 255, 0, 100)); // semi-transparent green for hitboxes
-
+        
         for (Hitbox hitbox : hitboxes) {
-            g2.fillRect(hitbox.x - cameraX, hitbox.y - cameraY, hitbox.width, hitbox.height);
+            if("shop".equals(hitbox.id)){
+                g.drawImage(redstore.getImage(), hitbox.x - 240 - cameraX, hitbox.y - 300 - cameraY, this);
+            }
+            else if("upgrade".equals(hitbox.id)){
+                g.drawImage(bluestore.getImage(), hitbox.x - 150 - cameraX, hitbox.y - 260 - cameraY, this);
+            }
+            // else{
+                g2.fillRect(hitbox.x - cameraX, hitbox.y - cameraY, hitbox.width, hitbox.height);
+            // }
         }
+        drawHealthAndManaBars(g2);// drawing the health and mana bars
 
         g2.dispose();
 
@@ -555,32 +880,87 @@ public class GamePanel extends JPanel implements Runnable{
         setCursor(Cursor.getDefaultCursor());
     }
 
+    //teleporting the player to the next map
     public void mapTeleport(String newMapName) {
-    System.out.println("Player is at the edge of the map, teleporting to the next map.");
+        System.out.println("Player is at the edge of the map, teleporting to the next map.");
 
-    mapName = newMapName; // update current mapName
+        mapName = newMapName; // update current mapName
 
-    if (mapName.equals("loby")) {
-        currentMap = new Loby();
-        mapHeight = currentMap.getImage().getHeight();
-        mapWidth = currentMap.getImage().getWidth();
-        playerX = 1800;
-        playerY = 700;
-        setBoundsForMap("loby");
-        setHitboxForMap("loby");
-    } else if (mapName.equals("traning")) {
-        currentMap = new Traning();
-        mapHeight = currentMap.getImage().getHeight();
-        mapWidth = currentMap.getImage().getWidth();
-        playerX = 1800;
-        playerY = 700;
-        setBoundsForMap("traning");
-        setHitboxForMap("traning");
-        upgradePanel.setVisible(true);
+
+        if (mapName.equals("loby")) {
+            currentMap = new Loby();
+            mapHeight = currentMap.getImage().getHeight();
+            mapWidth = currentMap.getImage().getWidth();
+            playerX = 1800;
+            playerY = 700;
+            setBoundsForMap("loby");
+        } else if (mapName.equals("traning")) {
+            currentMap = new Traning();
+            mapHeight = currentMap.getImage().getHeight();
+            mapWidth = currentMap.getImage().getWidth();
+            playerX = 1800;
+            playerY = 700;
+            setBoundsForMap("traning");
+            // setHitboxForMap("loby");
+        } else if (mapName.equals("battle")) {
+            try {
+                monsterSpawn = new MonsterSpawn();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } // initialize monster spawn for Battle map 
+            currentMap = new Battle();
+            mapHeight = currentMap.getImage().getHeight();
+            mapWidth = currentMap.getImage().getWidth();
+            playerX = 1800;
+            playerY = 700;
+            setBoundsForMap("battle");
+        } else if (mapName.equals("boss")) {
+            try {
+                monsterSpawn = new MonsterSpawn();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } // initialize monster spawn for Battle map 
+            for(int i = 0; monsterSpawn.monsterList.size() < 1; i++) {
+                monsterSpawn.monsterList.get(i).setMonsterHp(1000);
+                monsterSpawn.monsterList.get(i).setMagicalMonsterArmor(1000);
+                monsterSpawn.monsterList.get(i).setMagicalMonsterDamage(1000);
+                monsterSpawn.monsterList.get(i).setPhysicalMonsterArmor(1000);
+                monsterSpawn.monsterList.get(i).setPhysicalMosterDamgae(1000);
+                monsterSpawn.monsterList.get(i).setSpeed(10);
+            }
+            Random ran = new Random();
+            currentBoss = ran.nextInt(monsterSpawn.monsterList.size()); // get a random boss monster
+            System.out.println(monsterSpawn.monsterList.size());
+            currentMap = new Boss();
+            mapHeight = currentMap.getImage().getHeight();
+            mapWidth = currentMap.getImage().getWidth();
+            playerX = 1800;
+            playerY = 700;
+            setBoundsForMap("boss");
+        }
+        
+
     }
-}
 
-public void CheckCollision() {
-}
-    
+    public void CheckCollision() {
+        /* Vince Comment
+         * i believe this function is used by using each monster to call this function. if one of them is true, player takes damage and reset the global invincibility (if there's any)
+         */
+
+
+
+    }
+
+    // TODO temp func
+        boolean isColliding(int mx1, int my1, int mx2, int my2, int px1, int py1, int px2, int py2) {
+            return (mx1 < px2 && mx2 > px1 && my1 < py2 && my2 > py1);
+            }
+    // end temp func
+
+    private void sleep(int i) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'sleep'");
+    }
 }

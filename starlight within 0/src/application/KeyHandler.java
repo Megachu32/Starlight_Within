@@ -1,10 +1,11 @@
     package application;
     import java.awt.event.KeyEvent;
     import java.awt.event.KeyListener;
+import map.PlayerStatsAndInventoryLaunchPage;
 
     public class KeyHandler implements KeyListener {
 
-        public static boolean up, down, left, right, space, block;
+        public static boolean up, down, left, right, space, magic, hitbox, EscButton, stats;
 
         // for when a key is typed
         @Override
@@ -32,10 +33,17 @@
                 space = true;
             }
             else if(code == KeyEvent.VK_E){
-                
+                hitbox = true;
             }
             else if(code == KeyEvent.VK_Q){
-                block = true;
+                magic = true;
+            }
+            else if(code == KeyEvent.VK_ESCAPE){
+                EscButton = true;
+            }
+            else if(code == KeyEvent.VK_M){
+                // This is where you would call the method to show the player stats and inventory
+                PlayerStatsAndInventoryLaunchPage.ShowStatsAndInventory(); // Show the player stats and inventory
             }
         }
 
@@ -54,10 +62,10 @@
                 right = false;
             }
             else if(code == KeyEvent.VK_E){
-                
+                hitbox = false;
             }
-            else if(code == KeyEvent.VK_Q){
-                block = false;
+            else if(code == KeyEvent.VK_ESCAPE){
+                EscButton = false;
             }
         
         }
